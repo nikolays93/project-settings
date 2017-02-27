@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI:
 Description: Скрывает не раскрытый функионал WordPress.
-Version: 1.0
+Version: 1.1
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -68,12 +68,14 @@ class dt_projectSettings //extends AnotherClass
 			add_action('admin_head', array($this, 'clear_yoast_from_toolbar'));
 		}
 			
-		if ( (isset($_GET['page']) && $_GET['page'] == 'project-settings.php') || isset($_COOKIE['developer']) ){}
-		else { add_action('admin_menu', array($this, 'hide_menus_init'), 9999 ); }
+			
+		if(isset($_GET['page']) && $_GET['page'] == 'project-settings.php')
+			add_action( 'admin_enqueue_scripts', array($this, 'get_assets') );
+		elseif(!isset($_COOKIE['developer']))
+			add_action( 'admin_menu', array($this, 'hide_menus_init'), 9999 );
 
-		add_action( 'admin_menu', array($this, 'options') );
 		add_action( 'admin_init', array($this, 'options_settings') );
-		add_action( 'admin_enqueue_scripts', array($this, 'get_assets') );
+		add_action( 'admin_menu', array($this, 'options') );
 	}
 	public function is_empty_settings(){
 		if(sizeof($this->option_values) >= 1)
