@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI:
 Description: Скрывает не раскрытый функионал WordPress.
-Version: 1.1
+Version: 1.2
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -55,6 +55,9 @@ class dt_projectSettings //extends AnotherClass
 	}
 
 	public function set_actions(){
+		if(! $this->option_values )
+			return false;
+
 		extract($this->option_values);
 
 		if(! isset($check_updates) )
@@ -78,7 +81,7 @@ class dt_projectSettings //extends AnotherClass
 		add_action( 'admin_menu', array($this, 'options') );
 	}
 	public function is_empty_settings(){
-		if(sizeof($this->option_values) >= 1)
+		if($this->option_values !== false && sizeof($this->option_values) >= 1)
 			return false;
 		else
 			return true;
