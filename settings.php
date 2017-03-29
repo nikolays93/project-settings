@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI:
 Description: Скрывает не раскрытый функионал WordPress.
-Version: 1.2
+Version: 2.0a
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -56,7 +56,7 @@ class dt_projectSettings //extends AnotherClass
 
 	function __construct(){}
 
-	public function set_actions(){
+	public function check_do_actions(){
 		$opts = get_option( DT_GLOBAL_PAGESLUG );
 
 		if(! $opts )
@@ -73,7 +73,7 @@ class dt_projectSettings //extends AnotherClass
 			add_action('admin_head', 'dt_clear_yoast_from_toolbar');
 		}
 			
-		if(isset($_GET['page']) && $_GET['page'] == 'project-settings.php')
+		if(isset($_GET['page']) && $_GET['page'] == DT_GLOBAL_PAGESLUG )
 			add_action( 'admin_enqueue_scripts', array($this, 'get_assets') );
 		elseif(!isset($_COOKIE['developer']))
 			add_action( 'admin_menu', 'dt_hide_menus_init', 9999 );
@@ -135,6 +135,7 @@ class dt_projectSettings //extends AnotherClass
 				$this->page, DT_GLOBAL_PAGESLUG.'_'.$section_slug, $args );
 		}
 	}
+
 	function get_not_hide_button(){ //has html
 		$add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
 		?>
@@ -186,29 +187,6 @@ class dt_projectSettings //extends AnotherClass
 			$this->page, array($this, 'options_preview') );
 	}
 	function options_preview(){ // has html	?>
-		<style>
-			#adminmenu li {
-				position: relative;
-			}
-			#adminmenu li .after {
-				position: absolute;
-				z-index: 100;
-				top: 0;
-				right: 0;
-				display: block;
-				text-align: center;
-				width: 34px;
-				height: 34px;
-				color: #444;
-				opacity: 1;
-			}
-			#adminmenu li .after.hide {
-				color: #fff;
-			}
-			#adminmenu>li>.after {
-				line-height: 34px;
-			}
-		</style>
 		<div class="wrap">
 			<h2>Настройки проекта</h2>
 			<form method="post" enctype="multipart/form-data" action="options.php">
@@ -261,5 +239,32 @@ if( is_admin() )
 
 
 $dtps = new dt_projectSettings();
-$dtps->set_actions();
+$dtps->check_do_actions();
 
+
+
+/*
+		<style>
+			#adminmenu li {
+				position: relative;
+			}
+			#adminmenu li .after {
+				position: absolute;
+				z-index: 100;
+				top: 0;
+				right: 0;
+				display: block;
+				text-align: center;
+				width: 34px;
+				height: 34px;
+				color: #444;
+				opacity: 1;
+			}
+			#adminmenu li .after.hide {
+				color: #fff;
+			}
+			#adminmenu>li>.after {
+				line-height: 34px;
+			}
+		</style>
+ */
