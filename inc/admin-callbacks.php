@@ -22,7 +22,7 @@ class dtAdminPage
 		$this->page_content_cb = $page_content_cb;
 
 		add_action('admin_menu', array($this,'add_page'));
-		add_action('admin_enqueue_scripts', array($this, 'load_scripts'));
+		// add_action('admin_enqueue_scripts', array($this, 'load_scripts'));
 	}
 
 	function add_page(){
@@ -54,29 +54,15 @@ class dtAdminPage
 		wp_enqueue_script( 'devtools_admin_page', DT_PS_DIR_PATH . '/assets/project-settings.js', array(), '1.0', true );
 	}
 
-	function footer_scripts(){
-		// init meta boxes
-		echo "<script>
-			jQuery(document).ready(function($){
-				postboxes.add_postbox_toggles(pagenow);
-				
-				$('#ccpt input#name').on('keyup', function(){
-					$('#ccpt input#menu_name').attr('placeholder', $('#ccpt input#name').val() );
-				});
-				
-			});
-		</script>";
-	}
-
-
 	function render_page(){
-		?>
+				?>
+
 		<div class="wrap">
 
 			<?php screen_icon(); ?>
 			<h2> <?php echo esc_html($this->args['title']);?> </h2>
 
-			<form id="ccpt" name="my_form" method="post">  
+			<form id="ccpt" enctype="multipart/form-data" action="options.php" method="post">  
 				<input type="hidden" name="action" value="some-action">
 				<?php wp_nonce_field( 'some-action-nonce' );
 
@@ -89,11 +75,15 @@ class dtAdminPage
 					<div id="post-body" class="metabox-holder columns-<?php echo 1 == get_current_screen()->get_columns() ? '1' : '2'; ?>"> 
 
 						<div id="post-body-content">
+							<?php do_settings_sections($this->page); ?>
 							<?php call_user_func($this->page_content_cb); ?>
 						</div>    
 
 						<div id="postbox-container-1" class="postbox-container">
-							<?php do_meta_boxes('','side',null); ?>
+							<?php
+								do_meta_boxes('','side',null); 
+								submit_button();
+							?>
 						</div>    
 
 						<div id="postbox-container-2" class="postbox-container">
@@ -104,10 +94,24 @@ class dtAdminPage
 					</div> <!-- #post-body -->
 
 				</div> <!-- #poststuff -->
-
+				<?php
+					// add hidden settings
+					settings_fields( DT_GLOBAL_PAGESLUG );
+				?>
 			</form>			
 
 		</div><!-- .wrap -->
+
+		<script>
+			jQuery(document).ready(function($){
+				postboxes.add_postbox_toggles(pagenow);
+				
+				$('#ccpt input#name').on('keyup', function(){
+					$('#ccpt input#menu_name').attr('placeholder', $('#ccpt input#name').val() );
+				});
+				
+			});
+		</script>
 		<?php
 	}
 }
