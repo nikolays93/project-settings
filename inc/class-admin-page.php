@@ -117,24 +117,6 @@ class dtAdminPage
 		<?php
 	}
 
-	function add_section($name='string', $arr_args=array(), $section_slug='string', $desc_callback=''){
-		if($name === 'string' || sizeof($arr_args) == 0 || $section_slug === 'string')
-			return;
-
-		if($desc_callback != '')
-			$desc_callback = array($this, $desc_callback);
-
-		add_settings_section( DT_GLOBAL_PAGESLUG.'_'.$section_slug, $name, $desc_callback, $this->page );
-		foreach ($arr_args as $args ) {
-			if($args == 'hidden_textarea')
-				add_settings_field( 'pre_'.$arg['id'], '', create_function( '$a', "return null;" ),
-					$this->page, DT_GLOBAL_PAGESLUG.'_'.$section_slug );
-
-			add_settings_field( $args['id'], $args['label'], array($this, 'inputs_template'),
-				$this->page, DT_GLOBAL_PAGESLUG.'_'.$section_slug, $args );
-		}
-	}
-
 	function validate_settings($input){
 		// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
 		$valid_input = array();
