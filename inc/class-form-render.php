@@ -1,6 +1,8 @@
 <?php
 // ver 1.3.3
 
+namespace DTSettings;
+
 if(! function_exists('_isset_false') ){
   function _isset_false(&$var, $unset = false){
     return _isset_default( $var, false, $unset );

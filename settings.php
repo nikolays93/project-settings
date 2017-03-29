@@ -33,14 +33,6 @@ define('DT_GLOBAL_PAGESLUG', 'project-settings');
 define('DT_CCPT_PAGESLUG', 'create_cpt');
 define('DT_ECPT_PAGESLUG', 'edit_cpt');
 
-require_once(__DIR__ . '/inc/actions.php');
-
-if( is_admin() ){
-	require_once(__DIR__ . '/inc/class-admin-page.php');
-	require_once(__DIR__ . '/inc/admin-callbacks.php');
-	require_once(__DIR__ . '/inc/class-form-render.php');
-}
-
 if(!function_exists('is_wp_debug')){
   function is_wp_debug(){
     if( WP_DEBUG ){
@@ -51,6 +43,17 @@ if(!function_exists('is_wp_debug')){
     }
     return false;
   }
+}
+
+// require_once(__DIR__ . '/inc/cpt-actions.php');
+require_once(__DIR__ . '/inc/settings-actions.php');
+
+if( is_admin() ){
+	require_once(__DIR__ . '/inc/class-admin-page.php');
+	require_once(__DIR__ . '/inc/class-form-render.php');
+
+	require_once(__DIR__ . '/inc/admin-cpt-page.php');
+	require_once(__DIR__ . '/inc/admin-settings-page.php');
 }
 
 register_activation_hook( __FILE__, 'DTSettings\project_settings_activation' );

@@ -134,4 +134,17 @@ class dtAdminPage
 				$this->page, DT_GLOBAL_PAGESLUG.'_'.$section_slug, $args );
 		}
 	}
+
+	function validate_settings($input){
+		// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
+		$valid_input = array();
+
+		if(sizeof($input) > 0){
+			foreach ($input as $k => $v) {
+				$valid_input[$k] = $v;
+			}
+		}
+
+		return $valid_input;
+	}
 }
