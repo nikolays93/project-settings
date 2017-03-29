@@ -4,7 +4,9 @@ namespace DTSettings;
 
 class dtAdminPage
 {
-	protected $page = '';
+	public $page = '';
+	public $screen = '';
+
 	protected $args = array(
 		'parent' => 'options-general.php',
 		'title' => '',
@@ -28,7 +30,7 @@ class dtAdminPage
 	}
 
 	function add_page(){
-		$this->page = add_submenu_page(
+		$this->screen = add_submenu_page(
 			$this->args['parent'],
 			$this->args['title'],
 			$this->args['menu'],
@@ -36,13 +38,13 @@ class dtAdminPage
 			$this->page,
 			array($this,'render_page'), 10);
 
-		add_action('load-'.$this->page, array($this,'page_actions'),9);
-		add_action('admin_footer-'.$this->page, array($this,'footer_scripts'));
+		add_action('load-'.$this->screen, array($this,'page_actions'),9);
+		add_action('admin_footer-'.$this->screen, array($this,'footer_scripts'));
 	}
 
 	function page_actions(){
-		do_action('add_meta_boxes_'.$this->page, null);
-		do_action('add_meta_boxes', $this->page, null);
+		do_action('add_meta_boxes_'.$this->screen, null);
+		do_action('add_meta_boxes', $this->screen, null);
 
 		// User can choose between 1 or 2 columns (default 2)
 		add_screen_option('layout_columns', array('max' => 2, 'default' => 2) );
@@ -51,7 +53,7 @@ class dtAdminPage
 		wp_enqueue_script('postbox');
 	}
 	function load_scripts( $screen ){
-		if($screen !== $this->page)
+		if($screen !== $this->screen)
 			return false;
 
 		wp_enqueue_script( 'devtools_admin_page', DT_PS_DIR_PATH . '/assets/project-settings.js', array(), '1.0', true );
@@ -71,8 +73,8 @@ class dtAdminPage
 			<h2> <?php echo esc_html($this->args['title']);?> </h2>
 
 			<form id="ccpt" enctype="multipart/form-data" action="options.php" method="post">  
-				<input type="hidden" name="action" value="some-action">
-				<?php wp_nonce_field( 'some-action-nonce' );
+				<?php
+				register_setting( $this->page, $this->page, array($this, 'validate_options') );
 
 				/* Used to save closed metaboxes and their order */
 				wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
@@ -83,7 +85,7 @@ class dtAdminPage
 					<div id="post-body" class="metabox-holder columns-<?php echo 1 == get_current_screen()->get_columns() ? '1' : '2'; ?>"> 
 
 						<div id="post-body-content">
-							<?php do_settings_sections($this->page); ?>
+							<?php // do_settings_sections($this->page); ?>
 							<?php call_user_func($this->page_content_cb); ?>
 						</div>    
 
@@ -104,7 +106,7 @@ class dtAdminPage
 				</div> <!-- #poststuff -->
 				<?php
 					// add hidden settings
-					settings_fields( DT_GLOBAL_PAGESLUG );
+					settings_fields( $this->page );
 				?>
 			</form>			
 
@@ -112,7 +114,7 @@ class dtAdminPage
 		<?php
 	}
 
-	function validate_settings($input){
+	function validate_options($input){
 		// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
 		$valid_input = array();
 
