@@ -50,14 +50,6 @@ function options_settings() {
 	$this->add_section('Настройки меню', $arr_args, 'menu', 'get_not_hide_button');
 }
 
-new dtAdminPage( DT_GLOBAL_PAGESLUG,
-	array(
-		'parent' => 'options-general.php',
-		'title' => __('Project settings','domain'),
-		'menu' => __('Project settings','domain'),
-		),
-	'page_settings_body' );
-
 new dtAdminPage( DT_CCPT_PAGESLUG,
 	array(
 		'parent' => 'options-general.php',
@@ -74,36 +66,32 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 		),
 	'DTSettings\page_cpt_body' );
 
-function page_settings_body(){
-	echo "Some test";
-}
+
 
 // Define the body content for the pag
 function page_cpt_body(){
 	echo "Use http://wp-default.lc/wp-admin/options-general.php?page=edit_cpt&post_type=post for load \$active"; 
-	\DTForm::render(
-		array(
-			array( 'id' => 'type_slug',
-				'type' => 'text',
-				'label' => 'Post type general name',
-				'desc' => 'The handle (slug) name of the post type, usually plural.',
-				'placeholder' => 'e.g. news'
-				),
-			array( 'id' => 'singular_name',
-				'type' => 'text',
-				'label' => 'Singular name',
-				'desc' => 'name for one object of this post type.',
-				'placeholder' => 'e.g. article'
-				),
-			array( 'id' => 'menu_name',
-				'type' => 'text',
-				'label' => 'Menu name',
-				'desc' => 'display left menu label. same as name (if empty)'
-				),
+	
+	$form = array(
+		array( 'id' => 'type_slug',
+			'type' => 'text',
+			'label' => 'Post type general name',
+			'desc' => 'The handle (slug) name of the post type, usually plural.',
+			'placeholder' => 'e.g. news'
 			),
-		array(),
-		true
+		array( 'id' => 'singular_name',
+			'type' => 'text',
+			'label' => 'Singular name',
+			'desc' => 'name for one object of this post type.',
+			'placeholder' => 'e.g. article'
+			),
+		array( 'id' => 'menu_name',
+			'type' => 'text',
+			'label' => 'Menu name',
+			'desc' => 'display left menu label. same as name (if empty)'
+			),
 		);
+	DTForm::render( apply_filters( 'dtwp_options_page_render', $form ),	array(), true );
 }
 
 /**
@@ -117,14 +105,14 @@ function admin_page_boxes(){
 	// menu id + _page_ + pageslug
 	foreach (array(DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG) as $value) {
 		add_meta_box('labels','Labels (not required)','DTSettings\dt_labels','settings_page_'.$value,'normal','high');
-		add_meta_box('type_settings','Settings','DTSettings\dt_example_metabox','settings_page_'.$value,'side','high');
+		add_meta_box('type_settings','Settings','DTSettings\dt_main_settings','settings_page_'.$value,'side','high');
 		add_meta_box('supports','Supports','DTSettings\dt_supports','settings_page_'.$value,'side','high');
 	}
 }
 
 function dt_labels(){
 	$plural = $single = '';
-	\DTForm::render( array(
+	$form = array(
 		array('id' => 'add_new',
 			'type' => 'text',
 			'placeholder' => 'Добавить ' . $single,
@@ -178,11 +166,12 @@ function dt_labels(){
 			'placeholder' => $plural . ' в корзине не найдены',
 			'label' => 'Not found in Trash',
 			'desc' => 'Default is No posts found in Trash/No pages found in Trash.'),
-		), array(), true );
+		);
+	DTForm::render( apply_filters( 'dtwp_options_page_render', $form ), array(), true );
 }
 
-function dt_example_metabox(){
-	\DTForm::render( array(
+function dt_main_settings(){
+	$form = array(
 		array('id' => 'public',
 			'type' => 'checkbox',
 			'label' => 'Public',
@@ -223,11 +212,12 @@ function dt_example_metabox(){
 			'label' => 'Menu position',
 			'desc' => '',
 			),
-		), array(), false, array(
+		)
+	DTForm::render( apply_filters( 'dtwp_options_page_render', $form ), array(), false, array(
 			'hide_desc' => true
 		) );
 
-	\DTForm::render( array(
+	$form = array(
 		array('id' => 'query_var',
 			'type' => 'text',
 			'label' => 'Query var',
@@ -243,7 +233,8 @@ function dt_example_metabox(){
 			'label' => 'Menu icon',
 			'placeholder' => 'dashicons-admin-post',
 			)
-		), array(), true, array(
+		);
+	DTForm::render( apply_filters( 'dtwp_options_page_render', $form ), array(), true, array(
 			'form_wrap' => array('<table class="table"><tbody>', '</tbody></table>'),
 			'label_tag' => 'td',
 			'hide_desc' => true
@@ -253,7 +244,7 @@ function dt_example_metabox(){
 function dt_supports(){
 	echo "see more about add_post_type_support()";
 
-	\DTForm::render( array(
+	$form = array(
 		array("id" => 's_title',
 			'type' => 'checkbox',
 			'label' => 'Post Title',
@@ -284,8 +275,8 @@ function dt_supports(){
 			'label' => 'Page Attributes',
 			'desc' => ''
 			),
-
-		) );
+		);
+	DTForm::render( apply_filters( 'dtwp_options_page_render', $form ) );
 }
 
 function get_admin_assets(){
