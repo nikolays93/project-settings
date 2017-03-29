@@ -1,4 +1,5 @@
 <?php
+namespace DTSettings;
 
 class dtAdminPage
 {
@@ -131,7 +132,7 @@ new dtAdminPage( DT_CCPT_PAGESLUG,
 		'title' => __('Create custom post type','domain'),
 		'menu' => __('Add post type','domain'),
 		),
-	'page_cpt_body' );
+	'DTSettings\page_cpt_body' );
 
 new dtAdminPage( DT_ECPT_PAGESLUG,
 	array(
@@ -139,7 +140,7 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 		'title' => __('Edit post type','domain'),
 		'menu' => __('Edit post type','domain'),
 		),
-	'page_cpt_body' );
+	'DTSettings\page_cpt_body' );
 
 function page_settings_body(){
 	echo "Some test";
@@ -148,7 +149,7 @@ function page_settings_body(){
 // Define the body content for the pag
 function page_cpt_body(){
 	echo "Use http://wp-default.lc/wp-admin/options-general.php?page=edit_cpt&post_type=post for load \$active"; 
-	DTForm::render(
+	\DTForm::render(
 		array(
 			array( 'id' => 'type_slug',
 				'type' => 'text',
@@ -179,19 +180,19 @@ function page_cpt_body(){
  * Define the insides of the metabox
  */
 
-add_action('add_meta_boxes','admin_page_boxes');
+add_action('add_meta_boxes', 'DTSettings\admin_page_boxes');
 function admin_page_boxes(){
 	// menu id + _page_ + pageslug
 	foreach (array(DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG) as $value) {
-		add_meta_box('labels','Labels (not required)','dt_labels','settings_page_'.$value,'normal','high');
-		add_meta_box('type_settings','Settings','dt_example_metabox','settings_page_'.$value,'side','high');
-		add_meta_box('supports','Supports','dt_supports','settings_page_'.$value,'side','high');
+		add_meta_box('labels','Labels (not required)','DTSettings\dt_labels','settings_page_'.$value,'normal','high');
+		add_meta_box('type_settings','Settings','DTSettings\dt_example_metabox','settings_page_'.$value,'side','high');
+		add_meta_box('supports','Supports','DTSettings\dt_supports','settings_page_'.$value,'side','high');
 	}
 }
 
 function dt_labels(){
 	$plural = $single = '';
-	DTForm::render( array(
+	\DTForm::render( array(
 		array('id' => 'add_new',
 			'type' => 'text',
 			'placeholder' => 'Добавить ' . $single,
@@ -249,7 +250,7 @@ function dt_labels(){
 }
 
 function dt_example_metabox(){
-	DTForm::render( array(
+	\DTForm::render( array(
 		array('id' => 'public',
 			'type' => 'checkbox',
 			'label' => 'Public',
@@ -294,7 +295,7 @@ function dt_example_metabox(){
 			'hide_desc' => true
 		) );
 
-	DTForm::render( array(
+	\DTForm::render( array(
 		array('id' => 'query_var',
 			'type' => 'text',
 			'label' => 'Query var',
@@ -320,7 +321,7 @@ function dt_example_metabox(){
 function dt_supports(){
 	echo "see more about add_post_type_support()";
 
-	DTForm::render( array(
+	\DTForm::render( array(
 		array("id" => 's_title',
 			'type' => 'checkbox',
 			'label' => 'Post Title',
