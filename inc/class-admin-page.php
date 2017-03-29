@@ -37,6 +37,7 @@ class dtAdminPage
 			array($this,'render_page'), 10);
 
 		add_action('load-'.$this->page, array($this,'page_actions'),9);
+		add_action('admin_footer-'.$this->page, array($this,'footer_scripts'));
 	}
 
 	function page_actions(){
@@ -54,6 +55,11 @@ class dtAdminPage
 			return false;
 
 		wp_enqueue_script( 'devtools_admin_page', DT_PS_DIR_PATH . '/assets/project-settings.js', array(), '1.0', true );
+	}
+
+	function footer_scripts(){
+		
+		echo "<script> jQuery(document).ready(function($){ postboxes.add_postbox_toggles(pagenow); });</script>";
 	}
 
 	function render_page(){
@@ -103,17 +109,6 @@ class dtAdminPage
 			</form>			
 
 		</div><!-- .wrap -->
-
-		<script>
-			jQuery(document).ready(function($){
-				postboxes.add_postbox_toggles(pagenow);
-				
-				$('#ccpt input#name').on('keyup', function(){
-					$('#ccpt input#menu_name').attr('placeholder', $('#ccpt input#name').val() );
-				});
-				
-			});
-		</script>
 		<?php
 	}
 
