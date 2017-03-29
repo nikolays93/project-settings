@@ -6,6 +6,7 @@ class dtAdminPage
 {
 	public $page = '';
 	public $screen = '';
+	public $option_name = '';
 
 	protected $args = array(
 		'parent' => 'options-general.php',
@@ -15,7 +16,7 @@ class dtAdminPage
 		);
 	protected $page_content_cb = '';
 
-	function __construct( $page_slug, $args, $page_content_cb )
+	function __construct( $page_slug, $args, $page_content_cb, $option_name = false )
 	{
 		// slug required
 		if( !$page_slug )
@@ -24,9 +25,13 @@ class dtAdminPage
 		$this->page = $page_slug;
 		$this->args = array_merge( $this->args, $args );
 		$this->page_content_cb = $page_content_cb;
+		if( $option_name )
+			$this->option_name = $option_name;
+		else
+			$this->option_name = $this->page;
 
 		add_action('admin_menu', array($this,'add_page'));
-		// add_action('admin_enqueue_scripts', array($this, 'load_scripts'));
+		add_action('admin_init', array($this,'register_option_page'));
 	}
 
 	function add_page(){
@@ -52,18 +57,15 @@ class dtAdminPage
 		// Enqueue WordPress' script for handling the metaboxes
 		wp_enqueue_script('postbox');
 	}
-	function load_scripts( $screen ){
-		if($screen !== $this->screen)
-			return false;
-
-		wp_enqueue_script( 'devtools_admin_page', DT_PS_DIR_PATH . '/assets/project-settings.js', array(), '1.0', true );
-	}
 
 	function footer_scripts(){
 		
 		echo "<script> jQuery(document).ready(function($){ postboxes.add_postbox_toggles(pagenow); });</script>";
 	}
+	function register_option_page(){
 
+		register_setting( $this->option_name, $this->option_name, array($this, 'validate_options') );
+	}
 	function render_page(){
 		?>
 
@@ -74,8 +76,6 @@ class dtAdminPage
 
 			<form id="ccpt" enctype="multipart/form-data" action="options.php" method="post">  
 				<?php
-				register_setting( $this->page, $this->page, array($this, 'validate_options') );
-
 				/* Used to save closed metaboxes and their order */
 				wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 				wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
@@ -85,7 +85,6 @@ class dtAdminPage
 					<div id="post-body" class="metabox-holder columns-<?php echo 1 == get_current_screen()->get_columns() ? '1' : '2'; ?>"> 
 
 						<div id="post-body-content">
-							<?php // do_settings_sections($this->page); ?>
 							<?php call_user_func($this->page_content_cb); ?>
 						</div>    
 
@@ -100,17 +99,20 @@ class dtAdminPage
 							<?php do_meta_boxes('','normal',null);  ?>
 							<?php do_meta_boxes('','advanced',null); ?>
 						</div>	     					
-
+						
 					</div> <!-- #post-body -->
-
 				</div> <!-- #poststuff -->
 				<?php
 					// add hidden settings
-					settings_fields( $this->page );
+					settings_fields( $this->option_name );
 				?>
-			</form>			
+			</form>
 
 		</div><!-- .wrap -->
+		<div class="clear" style="clear: both;"></div>
+		<pre>
+			<?php var_dump(get_option( $this->option_name )); ?>
+		</pre>	
 		<?php
 	}
 
@@ -120,7 +122,8 @@ class dtAdminPage
 
 		if(sizeof($input) > 0){
 			foreach ($input as $k => $v) {
-				$valid_input[$k] = $v;
+				if( $v )
+					$valid_input[$k] = $v;
 			}
 		}
 

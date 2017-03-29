@@ -7,7 +7,7 @@ new dtAdminPage( DT_CCPT_PAGESLUG,
 		'title' => __('Create custom post type','domain'),
 		'menu' => __('Add post type','domain'),
 		),
-	'DTSettings\page_cpt_body' );
+	'DTSettings\page_cpt_body', DT_CPT_OPTION );
 
 new dtAdminPage( DT_ECPT_PAGESLUG,
 	array(
@@ -15,7 +15,7 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 		'title' => __('Edit post type','domain'),
 		'menu' => __('Edit post type','domain'),
 		),
-	'DTSettings\page_cpt_body' );
+	'DTSettings\page_cpt_body', DT_CPT_OPTION );
 
 // Define the body content for the pag
 function page_cpt_body(){
@@ -43,9 +43,9 @@ function page_cpt_body(){
 	
 	$result = array();
 	foreach ($form as $filter) {
-		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, $_GET['page'], array() );
+		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
 	}
-	DTForm::render( $result, array(), true );
+	DTForm::render( $result, get_option(DT_CPT_OPTION), true );
 }
 
 /**
@@ -124,9 +124,9 @@ function dt_labels(){
 	
 	$result = array();
 	foreach ($form as $filter) {
-		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, $_GET['page'], array() );
+		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
 	}
-	DTForm::render( $result, array(), true );
+	DTForm::render( $result, get_option(DT_CPT_OPTION), true );
 }
 
 function dt_main_settings(){
@@ -174,9 +174,9 @@ function dt_main_settings(){
 		);
 	$result = array();
 	foreach ($form as $filter) {
-		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, $_GET['page'], array() );
+		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
 	}
-	DTForm::render( $result, array(), false, array(
+	DTForm::render( $result, get_option(DT_CPT_OPTION), false, array(
 			'hide_desc' => true
 		) );
 
@@ -200,9 +200,9 @@ function dt_main_settings(){
 	
 	$result = array();
 	foreach ($form as $filter) {
-		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, $_GET['page'], array() );
+		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
 	}
-	DTForm::render( $result, array(), true, array(
+	DTForm::render( $result, get_option(DT_CPT_OPTION), true, array(
 			'form_wrap' => array('<table class="table"><tbody>', '</tbody></table>'),
 			'label_tag' => 'td',
 			'hide_desc' => true
@@ -246,22 +246,10 @@ function dt_supports(){
 		);
 	$result = array();
 	foreach ($form as $filter) {
-		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, $_GET['page'], array() );
+		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
 	}
-	DTForm::render( $result );
+	DTForm::render( $result, get_option(DT_CPT_OPTION) );
 }
-
-function get_admin_assets(){
-	$opts = get_option( DT_GLOBAL_PAGESLUG, false );
-
-	wp_enqueue_script(  'project-settings', plugins_url( basename(__DIR__) . '/assets/project-settings.js' ), array('jquery') );
-	wp_localize_script( 'project-settings', 'menu_disabled', array(
-		'menu' => _isset_empty($opts['menu']),
-		'sub_menu' => _isset_empty($opts['sub_menu']),
-		) );
-}
-if(isset($_GET['page']) && $_GET['page'] == DT_GLOBAL_PAGESLUG )
-	add_action( 'admin_enqueue_scripts', array($this, 'get_admin_assets') );
 
 	 //      if(isset($args['public']) && $args['public'] == false){
   //       if( is_singular($type) || is_post_type_archive($type) ){

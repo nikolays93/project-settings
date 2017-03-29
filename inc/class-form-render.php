@@ -1,5 +1,5 @@
 <?php
-// ver 1.4.3
+// ver 2.0
 
 namespace DTSettings;
 
@@ -20,26 +20,26 @@ function _isset_empty(&$var, $unset = false){
 
 
 
-if(! has_filter( 'dtwp_options_page_render' ) ){
-  function options_page_render($field, $page_name, $active){
-    $field['name'] = $page_name . "[" . $field['id'] . "]";
+if(! has_filter( 'dt_admin_options_page_render' ) ){
+  function options_page_render($field, $option_name){
+    $field['name'] = $option_name . "[" . $field['id'] . "]";
 
-    if( isset($field['desc']) ){
-      $field['label'] = $field['desc'];
-      unset( $field['desc'] );
-    } else {
-      unset( $field['label'] );
-    }
+    // if( isset($field['desc']) ){
+    //   $field['label'] = $field['desc'];
+    //   unset( $field['desc'] );
+    // } else {
+    //   unset( $field['label'] );
+    // }
 
-    if( isset($active[$field['id']]) ){
-      if($field['type'] == 'checkbox')
-        $field['checked'] = 'checked';
-      $field['value'] = $active[$field['id']];
-    }
+    // if( isset($active[$field['id']]) ){
+    //   if($field['type'] == 'checkbox')
+    //     $field['checked'] = 'checked';
+    //   $field['value'] = $active[$field['id']];
+    // }
 
     return $field;
   }
-  add_filter( 'dtwp_options_page_render', 'DTSettings\options_page_render', 10, 3 );
+  add_filter( 'dt_admin_options_page_render', 'DTSettings\options_page_render', 10, 3 );
 }
 class DTForm
 {
@@ -129,7 +129,7 @@ class DTForm
       /**
        * get values
        */
-      $name = str_replace('[]', '', $input['name']);
+      $name = ( has_filter( 'dt_admin_options_page_render' ) ) ? $input['id'] : str_replace('[]', '', $input['name']);
       $entry = '';
       if($input['type'] == 'checkbox' || $input['type'] == 'radio'){
         $entry = self::is_checked( $name, $value, _isset_false($active[$name]), $default );

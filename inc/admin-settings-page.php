@@ -60,3 +60,17 @@ function options_settings() {
 		);
 	$this->add_section('Настройки меню', $arr_args, 'menu', 'get_not_hide_button');
 }
+
+
+function get_admin_assets(){
+	$opts = get_option( DT_GLOBAL_PAGESLUG, false );
+
+	wp_enqueue_script(  'project-settings', plugins_url( basename(__DIR__) . '/assets/project-settings.js' ), array('jquery') );
+	wp_localize_script( 'project-settings', 'menu_disabled', array(
+		'menu' => _isset_empty($opts['menu']),
+		'sub_menu' => _isset_empty($opts['sub_menu']),
+		) );
+}
+
+if(isset($_GET['page']) && $_GET['page'] == DT_GLOBAL_PAGESLUG )
+	add_action( 'admin_enqueue_scripts', array($this, 'get_admin_assets') );

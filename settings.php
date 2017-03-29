@@ -30,6 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 define('DT_PS_DIR_PATH', __DIR__);
 define('DT_GLOBAL_PAGESLUG', 'project-settings');
+define('DT_CPT_OPTION', 'project-types');
 define('DT_CCPT_PAGESLUG', 'create_cpt');
 define('DT_ECPT_PAGESLUG', 'edit_cpt');
 
