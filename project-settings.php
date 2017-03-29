@@ -23,7 +23,14 @@ Author URI: https://vk.com/nikolays_93
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+define('DT_PS_DIR_PATH', __DIR__);
+define('DT_GLOBAL_PAGESLUG', 'project-settings');
+define('DT_CCPT_PAGESLUG', 'create_cpt');
+define('DT_ECPT_PAGESLUG', 'edit_cpt');
+
 if(!function_exists('is_wp_debug')){
   function is_wp_debug(){
     if( WP_DEBUG ){
@@ -38,70 +45,60 @@ if(!function_exists('is_wp_debug')){
 
 register_activation_hook( __FILE__, 'project_settings_activation' );
 function project_settings_activation(){
-	$tdps = new dt_projectSettings();
-	if($tdps->is_empty_settings())
-		$tdps->set_defaults();
+	$opt = get_option( DT_GLOBAL_PAGESLUG );
+	if( $opt === false || sizeof($opt) < 1)
+		dt_projectSettings::set_defaults();
 }
 
 class dt_projectSettings //extends AnotherClass
 {
-	public $option_name = 'project-settings';
-	protected $option_values = false;
-	protected $page = '.php'; // $option_name . $page
+	public $page = DT_GLOBAL_PAGESLUG;
 
-	function __construct(){
-		$this->page = $this->option_name . $this->page;
-		$this->option_values = get_option( $this->option_name, false );
-	}
+	function __construct(){}
 
 	public function set_actions(){
-		if(! $this->option_values )
+		$opts = get_option( DT_GLOBAL_PAGESLUG );
+
+		if(! $opts )
 			return false;
 
-		extract($this->option_values);
+		if(! isset($opts['check_updates']) )
+			dt_disable_updater();
 
-		if(! isset($check_updates) )
-			$this->disable_updater();
+		if(! isset($opts['clear_dash']) )
+			add_action('wp_dashboard_setup', 'dt_clear_dash' );
 
-		if(! isset($clear_dash) )
-			add_action('wp_dashboard_setup', array($this, 'clear_dash') );
-
-		if(! isset($clear_toolbar) ){
-			add_action('admin_bar_menu', array($this, 'clear_toolbar'), 666);
-			add_action('admin_head', array($this, 'clear_yoast_from_toolbar'));
+		if(! isset($opts['clear_toolbar']) ){
+			add_action('admin_bar_menu', 'dt_clear_toolbar', 666);
+			add_action('admin_head', 'dt_clear_yoast_from_toolbar');
 		}
-			
 			
 		if(isset($_GET['page']) && $_GET['page'] == 'project-settings.php')
 			add_action( 'admin_enqueue_scripts', array($this, 'get_assets') );
 		elseif(!isset($_COOKIE['developer']))
-			add_action( 'admin_menu', array($this, 'hide_menus_init'), 9999 );
+			add_action( 'admin_menu', 'dt_hide_menus_init', 9999 );
 
 		add_action( 'admin_init', array($this, 'options_settings') );
 		add_action( 'admin_menu', array($this, 'options') );
-	}
-	public function is_empty_settings(){
-		if($this->option_values !== false && sizeof($this->option_values) >= 1)
-			return false;
-		else
-			return true;
 	}
 
 	/**
 	 * CallBacks
 	 */
 	function get_assets(){
+		$opts = get_option( DT_GLOBAL_PAGESLUG, false );
+
 		wp_enqueue_script(  'project-settings', plugins_url( basename(__DIR__) . '/assets/project-settings.js' ), array('jquery') );
 		wp_localize_script( 'project-settings', 'menu_disabled', array(
-			'menu' => isset($this->option_values['menu']) ? $this->option_values['menu'] : '',
-			'sub_menu' => isset($this->option_values['sub_menu']) ? $this->option_values['sub_menu'] : '',
+			'menu' => _isset_empty($opts['menu']),
+			'sub_menu' => _isset_empty($opts['sub_menu']),
 			) );
 	}
 	function inputs_template($args){
 		extract( $args );
 
-		$option = $this->option_name;
-		$vals = $this->option_values;
+		$option = DT_GLOBAL_PAGESLUG;
+		$vals = get_option( $option, false );
 
 		$value = (isset($vals[$id])) ? $vals[$id] : false; 
 
@@ -128,14 +125,14 @@ class dt_projectSettings //extends AnotherClass
 		if($desc_callback != '')
 			$desc_callback = array($this, $desc_callback);
 
-		add_settings_section( $this->option_name.'_'.$section_slug, $name, $desc_callback, $this->page );
+		add_settings_section( DT_GLOBAL_PAGESLUG.'_'.$section_slug, $name, $desc_callback, $this->page );
 		foreach ($arr_args as $args ) {
 			if($args == 'hidden_textarea')
 				add_settings_field( 'pre_'.$arg['id'], '', create_function( '$a', "return null;" ),
-					$this->page, $this->option_name.'_'.$section_slug );
+					$this->page, DT_GLOBAL_PAGESLUG.'_'.$section_slug );
 
 			add_settings_field( $args['id'], $args['label'], array($this, 'inputs_template'),
-				$this->page, $this->option_name.'_'.$section_slug, $args );
+				$this->page, DT_GLOBAL_PAGESLUG.'_'.$section_slug, $args );
 		}
 	}
 	function get_not_hide_button(){ //has html
@@ -144,7 +141,7 @@ class dt_projectSettings //extends AnotherClass
 		<input type="button" id="setNotHide" class="button<?=$add_class;?>" value="Показать скрытые меню (для браузера)">
 	<?php }
 	function options_settings() {
-		register_setting( $this->option_name, $this->option_name, array($this, 'validate_settings') );
+		register_setting( DT_GLOBAL_PAGESLUG, DT_GLOBAL_PAGESLUG, array($this, 'validate_settings') );
 
 		$arr_args = array(
 			array(
@@ -216,7 +213,7 @@ class dt_projectSettings //extends AnotherClass
 			<h2>Настройки проекта</h2>
 			<form method="post" enctype="multipart/form-data" action="options.php">
 				<?php 
-				settings_fields($this->option_name);
+				settings_fields(DT_GLOBAL_PAGESLUG);
 				do_settings_sections($this->page);
 				?>
 				<p class="submit">
@@ -244,101 +241,25 @@ class dt_projectSettings //extends AnotherClass
 	/**
 	 * Actions
 	 */
-	public function set_defaults(){
+	public static function set_defaults(){
 		$defaults = array(
 			'menu'     => 'edit-comments.php,users.php,tools.php,',
 			'sub_menu' => 'index.php>index.php,index.php>update-core.php,edit.php?post_type=shop_order>edit.php?post_type=shop_order,edit.php?post_type=shop_order>edit.php?post_type=shop_coupon,edit.php?post_type=shop_order>admin.php?page=wc-reports,options-general.php>options-discussion.php,',
 			);
 
-		update_option( $this->option_name, $defaults );
-	}
-	private function disable_updater(){
-		add_action( 'init', create_function( '$a', "remove_action( 'init', 'wp_version_check' );" ), 2 );
-		add_filter( 'pre_option_update_core', create_function( '$a', "return null;" ) );
-		remove_action( 'wp_version_check', 'wp_version_check' );
-		remove_action( 'admin_init', '_maybe_update_core' );
-		add_filter( 'pre_transient_update_core', create_function( '$a', "return null;"));
-		add_filter( 'pre_site_transient_update_core', create_function( '$a', "return null;"));
-		wp_clear_scheduled_hook( 'wp_version_check' );
-
-		remove_action( 'load-plugins.php', 'wp_update_plugins' );
-		remove_action( 'load-update.php', 'wp_update_plugins' );
-		remove_action( 'load-update-core.php', 'wp_update_plugins' );
-		remove_action( 'admin_init', '_maybe_update_plugins' );
-		remove_action( 'wp_update_plugins', 'wp_update_plugins' );
-		add_filter( 'pre_transient_update_plugins', create_function( '$a', "return null;" ) );
-		add_filter( 'pre_site_transient_update_plugins', create_function( '$a', "return null;" ) );
-		wp_clear_scheduled_hook( 'wp_update_plugins' );
-
-		remove_action( 'load-themes.php', 'wp_update_themes' );
-		remove_action( 'load-update.php', 'wp_update_themes' );
-		remove_action( 'load-update-core.php', 'wp_update_themes' );
-		remove_action( 'admin_init', '_maybe_update_themes' );
-		remove_action( 'wp_update_themes', 'wp_update_themes' );
-		add_filter( 'pre_transient_update_themes', create_function( '$a', "return null;" ) );
-		add_filter( 'pre_site_transient_update_themes', create_function( '$a', "return null;" ) );
-		wp_clear_scheduled_hook( 'wp_update_themes' );
-	}
-	function clear_dash(){
-		$side = &$GLOBALS['wp_meta_boxes']['dashboard']['side']['core'];
-		$normal = &$GLOBALS['wp_meta_boxes']['dashboard']['normal']['core'];
-
-		unset($side['dashboard_quick_press']); //Быстрая публикация
-	  	unset($side['dashboard_recent_drafts']); // Последние черновики
-		unset($side['dashboard_primary']); //Блог WordPress
-		unset($side['dashboard_secondary']); //Другие Новости WordPress
-
-		unset($normal['dashboard_incoming_links']); //Входящие ссылки
-	 	unset($normal['dashboard_recent_comments']); //Последние комментарии
-		unset($normal['dashboard_plugins']); //Последние Плагины
-	}
-	function clear_toolbar($wp_admin_bar){
-		$wp_admin_bar->remove_node( 'appearance' );
-		$wp_admin_bar->remove_node( 'comments' );
-		$wp_admin_bar->remove_node( 'updates' );
-	    $wp_admin_bar->remove_node( 'wpseo-menu' ); // hide yost seo
-	}
-	function clear_yoast_from_toolbar(){
-
-		echo '<style rel="stylesheet" type="text/css" media="all">.yoast-seo-score.content-score,.yoast-seo-score.keyword-score,#wpseo-filter{display:none;}</style>';
-	}
-	function hide_menus_init(){
-		$values = $this->option_values;
-
-		if(!isset($values['pre_menu'])){
-			if(isset($values['menu'])){
-				$menus = explode(',', $values['menu']);
-				foreach ($menus as $menu){
-					if(!empty($menu)){
-						$menu = str_replace("admin.php?page=", "", $menu);
-						switch ($menu) {
-							case 'edit.php?post_type=shop_order': $menu = 'woocommerce';break;
-						}
-						remove_menu_page($menu);
-					}
-				}
-			}
-		}
-		
-		if(!isset($values['pre_sub_menu'])){
-			if(isset($values['sub_menu'])){
-				$sub_menus = explode(',', $values['sub_menu']);
-				foreach ($sub_menus as $sub_menu) {
-					$sub_menu = str_replace("admin.php?page=", "", $sub_menu);
-					if(!empty($sub_menu)){
-						$parent_children = explode('>', $sub_menu);
-						if(!empty($parent_children[1])){ // на случай ошибки
-							switch ($parent_children[0]) {
-								case 'edit.php?post_type=shop_order': $parent_children[0] = 'woocommerce';break;
-							}
-							remove_submenu_page($parent_children[0], $parent_children[1]);
-						}
-
-					}
-				}
-			}
-		}
+		update_option( DT_GLOBAL_PAGESLUG, $defaults );
 	}
 }
+
+require_once(__DIR__ . '/inc/actions.php');
+require_once(__DIR__ . '/inc/admin-callbacks.php');
+// require_once(__DIR__ . '/inc/advanced-post-types.php');
+
+if( is_admin() )
+	require_once(__DIR__ . '/inc/dt-form-render.php');
+
+
+
 $dtps = new dt_projectSettings();
 $dtps->set_actions();
+
