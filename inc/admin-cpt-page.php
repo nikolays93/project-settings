@@ -34,14 +34,38 @@ function cpt_validate( $input ){
 		$post_types[$slug] = $new_post_type;
 	}
 	
-	
 	return $post_types;
 }
+add_filter( 'cpt_page_defaults', 'DTSettings\defaults', 10, 1 );
+function defaults( $form ){
+	$defaults = array(
+		's_title' => true,
+		's_editor' => true,
+		);
+
+	$new_form = array();
+	foreach ( $form as $input ) {
+		if( isset($defaults[ $input['id'] ]) ){
+			if ( $input['type'] == 'checkbox' || $input['type'] == 'radio' ){
+				if( $defaults[ $input['id'] ] )
+					$input['checked'] = 'checked';
+			}
+			else {
+				if( $defaults[ $input['id'] ] )
+					$input['value'] = $defaults[ $input['id'] ];
+			}
+		}
+		$new_form[] = $input;
+	}
+
+	return $new_form;
+}
+
 
 // Define the body content for the pag
 function page_cpt_body(){
 	// delete_option( DT_CPT_OPTION );
-
+	
 	echo "Use http://wp-default.lc/wp-admin/options-general.php?page=edit_cpt&post_type=post for load \$active"; 
 	
 	$form = array(
@@ -64,6 +88,9 @@ function page_cpt_body(){
 			),
 		);
 	
+	if( $_GET['page'] == DT_CCPT_PAGESLUG )
+		$form = apply_filters( 'cpt_page_defaults', $form );
+
 	$result = array();
 	foreach ($form as $filter) {
 		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
@@ -145,6 +172,9 @@ function dt_labels(){
 			'desc' => 'Default is No posts found in Trash/No pages found in Trash.'),
 		);
 	
+	if( $_GET['page'] == DT_CCPT_PAGESLUG )
+		$form = apply_filters( 'cpt_page_defaults', $form );
+
 	$result = array();
 	foreach ($form as $filter) {
 		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
@@ -195,6 +225,10 @@ function dt_main_settings(){
 			'desc' => '',
 			),
 		);
+	
+	if( $_GET['page'] == DT_CCPT_PAGESLUG )
+		$form = apply_filters( 'cpt_page_defaults', $form );
+
 	$result = array();
 	foreach ($form as $filter) {
 		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
@@ -221,6 +255,9 @@ function dt_main_settings(){
 			)
 		);
 	
+	if( $_GET['page'] == DT_CCPT_PAGESLUG )
+		$form = apply_filters( 'cpt_page_defaults', $form );
+
 	$result = array();
 	foreach ($form as $filter) {
 		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
@@ -267,6 +304,10 @@ function dt_supports(){
 			'desc' => ''
 			),
 		);
+	
+	if( $_GET['page'] == DT_CCPT_PAGESLUG )
+		$form = apply_filters( 'cpt_page_defaults', $form );
+
 	$result = array();
 	foreach ($form as $filter) {
 		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
@@ -274,7 +315,7 @@ function dt_supports(){
 	DTForm::render( $result, get_option(DT_CPT_OPTION) );
 }
 
-	 //      if(isset($args['public']) && $args['public'] == false){
+  //      if(isset($args['public']) && $args['public'] == false){
   //       if( is_singular($type) || is_post_type_archive($type) ){
   //         global $wp_query;
   //         $wp_query->set_404();
@@ -286,3 +327,5 @@ function dt_supports(){
   //   }
   // }
   //   add_action( 'wp', array($this, 'deny_access_private_type'), 1 );
+  //   
+  //   
