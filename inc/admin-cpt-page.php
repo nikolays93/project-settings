@@ -7,7 +7,7 @@ new dtAdminPage( DT_CCPT_PAGESLUG,
 		'title' => __('Create custom post type','domain'),
 		'menu' => __('Add post type','domain'),
 		),
-	'DTSettings\page_cpt_body', DT_CPT_OPTION );
+	'DTSettings\page_cpt_body', DT_CPT_OPTION, 'DTSettings\cpt_validate' );
 
 new dtAdminPage( DT_ECPT_PAGESLUG,
 	array(
@@ -15,10 +15,33 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 		'title' => __('Edit post type','domain'),
 		'menu' => __('Edit post type','domain'),
 		),
-	'DTSettings\page_cpt_body', DT_CPT_OPTION );
+	'DTSettings\page_cpt_body', DT_CPT_OPTION, 'DTSettings\cpt_validate' );
+
+function cpt_validate( $input ){
+	file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
+	$post_types = get_option( DT_CPT_OPTION );
+	if( ! $post_types )
+		$post_types = array();
+
+	$slug = _isset_false( $input['type_slug'], 1 );
+	if( $slug ){
+		$new_post_type = array();
+		foreach ($input as $key => $value) {
+			if( $value )
+				$new_post_type[$key] = sanitize_text_field( $value );
+		}
+
+		$post_types[$slug] = $new_post_type;
+	}
+	
+	
+	return $post_types;
+}
 
 // Define the body content for the pag
 function page_cpt_body(){
+	// delete_option( DT_CPT_OPTION );
+
 	echo "Use http://wp-default.lc/wp-admin/options-general.php?page=edit_cpt&post_type=post for load \$active"; 
 	
 	$form = array(
