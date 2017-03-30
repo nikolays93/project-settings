@@ -12,10 +12,19 @@
 	height: 34px;
 	color: #444;
 	opacity: 1;
+	padding: 0;
 }
 #adminmenu li .after.hide {
 	color: #fff;
 }
+#adminmenu li .after:hover {
+	color: #fff;
+	opacity: 0.8;
+}
 #adminmenu>li>.after {
 	line-height: 34px;
+}
+#adminmenu li a.after.dashicons {
+	right: 25px;
+	line-height: 36px;
 }

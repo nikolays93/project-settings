@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI:
 Description: Скрывает не раскрытый функионал WordPress.
-Version: 2.0a
+Version: 2.2a
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -53,6 +53,7 @@ if( is_admin() ){
 	require_once(__DIR__ . '/inc/class-admin-page.php');
 	require_once(__DIR__ . '/inc/class-form-render.php');
 
+	require_once(__DIR__ . '/inc/options.php');
 	require_once(__DIR__ . '/inc/admin-cpt-page.php');
 	require_once(__DIR__ . '/inc/admin-settings-page.php');
 }
@@ -108,10 +109,39 @@ function get_admin_assets(){
 	wp_localize_script( 'project-settings', 'menu_disabled', array(
 		'menu' => _isset_empty($opts['menu']),
 		'sub_menu' => _isset_empty($opts['sub_menu']),
+		'edit_cpt_page' => DT_ECPT_PAGESLUG
 		) );
+
+	wp_localize_script( 'project-settings', 'post_types', array_values( get_post_types() ) );
 }
 
 if( isset($_GET['page']) ){
 	if(in_array( $_GET['page'], array(DT_GLOBAL_PAGESLUG, DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG) ))
 		add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
 }
+
+
+// register_post_type('post_type_name', array(
+// 		'label'  => null,
+// 		'labels' => array(),
+// 		'description'         => '',
+// 		'public'              => false,
+// 		'publicly_queryable'  => null,
+// 		'exclude_from_search' => null,
+// 		'show_ui'             => null,
+// 		'show_in_menu'        => null, // показывать ли в меню адмнки
+// 		'show_in_admin_bar'   => null, // по умолчанию значение show_in_menu
+// 		'show_in_nav_menus'   => null,
+// 		'show_in_rest'        => null, // добавить в REST API. C WP 4.7
+// 		'rest_base'           => null, // $post_type. C WP 4.7
+// 		'menu_position'       => null,
+// 		'menu_icon'           => null, 
+// 		//'capability_type'   => 'post',
+// 		//'capabilities'      => 'post', // массив дополнительных прав для этого типа записи
+// 		//'map_meta_cap'      => null, // Ставим true чтобы включить дефолтный обработчик специальных прав
+// 		'hierarchical'        => false,
+// 		'taxonomies'          => array(),
+// 		'has_archive'         => false,
+// 		'rewrite'             => true,
+// 		'query_var'           => true,
+// 	) );

@@ -44,6 +44,21 @@ pcjq(function( $ ) {
 			}
 		});
 
+		$('#adminmenu > li > a').each(function(){
+			var elem = $(this).attr('href').split('?');
+			if(elem[0] == 'edit.php'){
+				if( ! elem[1] )
+					elem[1] = 'post_type=post'
+
+				link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&edit_' + elem[1];
+
+				$(this).parent('li').append( 
+					$("<a></a>").attr('href', link).attr('class', 'after dashicons dashicons-admin-generic') );
+
+				
+			}
+		});
+
 		var mainMenus = menu_disabled.menu.split(',');
 		var subMenus = menu_disabled.sub_menu.split(',');
 

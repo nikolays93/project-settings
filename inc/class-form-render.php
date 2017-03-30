@@ -19,28 +19,31 @@ function _isset_empty(&$var, $unset = false){
 }
 
 
+if(! has_filter( 'dt_admin_options' ) ){
+  function admin_page_options_filter( $inputs, $option_name = false ){
+    if( ! $option_name )
+      $option_name = _isset_false($_GET['page']);
 
-if(! has_filter( 'dt_admin_options_page_render' ) ){
-  function options_page_render($field, $option_name){
-    $field['name'] = $option_name . "[" . $field['id'] . "]";
+    if( ! $option_name )
+      return $inputs;
 
-    // if( isset($field['desc']) ){
-    //   $field['label'] = $field['desc'];
-    //   unset( $field['desc'] );
-    // } else {
-    //   unset( $field['label'] );
-    // }
-
-    // if( isset($active[$field['id']]) ){
-    //   if($field['type'] == 'checkbox')
-    //     $field['checked'] = 'checked';
-    //   $field['value'] = $active[$field['id']];
-    // }
-
-    return $field;
+    foreach ( $inputs as &$input ) {
+      if( is_array($input['id']) ){
+        foreach ($input['id'] as $key => $value) {
+          $input['id'] = $value;
+          $input['name'] = "{$option_name}[{$key}][{$value}]";
+        }
+      }
+      else {
+        $input['name'] = "{$option_name}[{$input['id']}]";
+      }
+      $input['check_active'] = 'id';
+    }
+    return $inputs;
   }
-  add_filter( 'dt_admin_options_page_render', 'DTSettings\options_page_render', 10, 3 );
+  add_filter( 'dt_admin_options', 'DTSettings\admin_page_options_filter', 10, 1 );
 }
+
 class DTForm
 {
   private static function is_checked( $name, $value, $active, $default ){
@@ -110,6 +113,9 @@ class DTForm
       $after   = _isset_empty($input['after'], 1);
       $default = _isset_false($input['default'], 1);
       $value   = _isset_false($input['value']);
+      $check_active = _isset_false($input['check_active'], 1);
+      
+      _isset_default( $input['placeholder'], $default );
 
       if( isset($input['desc']) ){
         $desc = $input['desc'];
@@ -121,38 +127,27 @@ class DTForm
       }
       else {
         $desc = false;
-      }  
+      }
 
       if( !isset($input['name']) )
           $input['name'] = _isset_empty($input['id']); //isset($input['id']) ? $input['id'] : '';
       
       /**
-       * get values
+       * set values
        */
-      $name = ( has_filter( 'dt_admin_options_page_render' ) ) ? $input['id'] : str_replace('[]', '', $input['name']);
+      $active_name = $check_active ? $input[$check_active] : str_replace('[]', '', $input['name']);
+      $active_value = _isset_false($active[$active_name]);
+
       $entry = '';
       if($input['type'] == 'checkbox' || $input['type'] == 'radio'){
-        $entry = self::is_checked( $name, $value, _isset_false($active[$name]), $default );
+        $entry = self::is_checked( $active_name, $value, $active_value, $default );
       }
-      elseif( $input['type'] == 'select'){
-        $entry = _isset_default($active[$name], $default);
+      elseif( $input['type'] == 'select' ){
+        $entry = ($active_value) ? $active_item : $default;
       }
       else {
         // if text, textarea, number, email..
-        if( isset( $active[$name] ) ){
-          $entry = $active[$name];
-        }
-        elseif( $default ){
-          if( !isset($input['placeholder']) ){
-            $input['placeholder'] = $default;
-          }
-          else {
-            $entry = $default;
-          }
-        }
-
-        if( $entry )
-          $input['value'] = $entry;
+          $input['value'] = $entry = ($active_value) ? $active_value : $default;
       }
 
       $func = 'render_' . $input['type'];
