@@ -15,8 +15,9 @@ class dtAdminPage
 		'permissions' => 'manage_options'
 		);
 	protected $page_content_cb = '';
+	protected $page_valid_cb = '';
 
-	function __construct( $page_slug, $args, $page_content_cb, $option_name = false )
+	function __construct( $page_slug, $args, $page_content_cb, $option_name = false, $valid_cb = false )
 	{
 		// slug required
 		if( !$page_slug )
@@ -29,6 +30,8 @@ class dtAdminPage
 			$this->option_name = $option_name;
 		else
 			$this->option_name = $this->page;
+
+		$this->page_valid_cb = ($valid_cb) ? $valid_cb : array($this, 'validate_options');
 
 		add_action('admin_menu', array($this,'add_page'));
 		add_action('admin_init', array($this,'register_option_page'));
@@ -64,7 +67,7 @@ class dtAdminPage
 	}
 	function register_option_page(){
 
-		register_setting( $this->option_name, $this->option_name, array($this, 'validate_options') );
+		register_setting( $this->option_name, $this->option_name, $this->page_valid_cb );
 	}
 	function render_page(){
 		?>
@@ -118,15 +121,7 @@ class dtAdminPage
 
 	function validate_options($input){
 		// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
-		$valid_input = array();
 
-		if(sizeof($input) > 0){
-			foreach ($input as $k => $v) {
-				if( $v )
-					$valid_input[$k] = $v;
-			}
-		}
-
-		return $valid_input;
+		return apply_filters( 'validate_admin_' . $this->page, $input );
 	}
 }
