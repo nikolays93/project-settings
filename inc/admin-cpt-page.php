@@ -1,6 +1,9 @@
 <?php
 namespace DTSettings;
 
+add_filter( DT_CCPT_PAGESLUG . '_columns', function(){return 2;} );
+add_filter( DT_ECPT_PAGESLUG . '_columns', function(){return 2;} );
+
 new dtAdminPage( DT_CCPT_PAGESLUG,
 	array(
 		'parent' => 'options-general.php',
@@ -17,20 +20,25 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 		),
 	'DTSettings\page_cpt_body', DT_CPT_OPTION, 'DTSettings\cpt_validate' );
 
+
+function array_filter_recursive($input){ 
+	foreach ($input as &$value){ 
+		if (is_array($value)){ 
+			$value = array_filter_recursive($value); 
+		} 
+	}
+
+	return array_filter($input); 
+} 
+
 function cpt_validate( $input ){
 	// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
 	$post_types = get_option( DT_CPT_OPTION );
 
 	$slug = _isset_false( $input['type_slug'], 1 );
-	if( $slug ){
-		$new_post_type = array();
-		foreach ($input as $key => $value) {
-			if( $value )
-				$new_post_type[$key] = sanitize_text_field( $value );
-		}
-
-		$post_types[$slug] = $new_post_type;
-	}
+	
+	if( $slug )
+		$post_types[$slug] = array_filter_recursive( $input );
 	
 	return $post_types;
 }
@@ -115,69 +123,69 @@ function admin_page_boxes(){
 function dt_labels(){
 	$plural = $single = '';
 	$form = array(
-		array('id' => 'add_new',
+		array('id' => DT_CPT_OPTION."[labels][add_new]",
 			'type' => 'text',
 			'placeholder' => 'Добавить ' . $single,
 			'label' => 'Add new',
 			'desc' => 'The add new text. The default is "Add New" for both hierarchical and non-hierarchical post types. When internationalizing this string, please use a gettext context matching your post type.'),
 		
-		array('id' => 'add_new_item',
+		array('id' => DT_CPT_OPTION."[labels][add_new_item]",
 			'type' => 'text',
 			'placeholder' => 'Добавить ' . $single,
 			'label' => 'Add new item',
 			'desc' => 'Default is Add New Post/Add New Page'),
 		
-		array('id' => 'new_item',
+		array('id' => DT_CPT_OPTION."[labels][new_item]",
 			'type' => 'text',
 			'placeholder' => 'Новая ' . $single,
 			'label' => 'New item',
 			'desc' => 'Default is New Post/New Page.'),
 		
-		array('id' => 'edit_item',
+		array('id' => DT_CPT_OPTION."[labels][edit_item]",
 			'type' => 'text',
 			'placeholder' => 'Изменить ' . $single,
 			'label' => 'Edit item',
 			'desc' => 'Default is Edit Post/Edit Page'),
 
-		array('id' => 'view_item',
+		array('id' => DT_CPT_OPTION."[labels][view_item]",
 			'type' => 'text',
 			'placeholder' => 'Показать ' . $single,
 			'label' => 'View item',
 			'desc' => 'Default is View Post/View Page.'),
 
-		array('id' => 'all_items',
+		array('id' => DT_CPT_OPTION."[labels][all_items]",
 			'type' => 'text',
 			'placeholder' => 'Все ' . $plural,
 			'label' => 'All items',
 			'desc' => 'String for the submenu. Default is All Posts/All Pages.'),
 
-		array('id' => 'search_items',
+		array('id' => DT_CPT_OPTION."[labels][search_items]",
 			'type' => 'text',
 			'placeholder' => 'Найти ' . $single,
 			'label' => 'Search items',
 			'desc' => 'Default is Search Posts/Search Pages.'),
 
-		array('id' => 'not_found',
+		array('id' => DT_CPT_OPTION."[labels][not_found]",
 			'type' => 'text',
 			'placeholder' => $plural . ' не найдены',
 			'label' => 'Not found',
 			'desc' => 'Default is No posts found/No pages found.'),
 
-		array('id' => 'not_found_in_trash',
+		array('id' => DT_CPT_OPTION."[labels][not_found_in_trash]",
 			'type' => 'text',
 			'placeholder' => $plural . ' в корзине не найдены',
 			'label' => 'Not found in Trash',
 			'desc' => 'Default is No posts found in Trash/No pages found in Trash.'),
 		);
 	
-	if( $_GET['page'] == DT_CCPT_PAGESLUG )
-		$form = apply_filters( 'cpt_page_defaults', $form );
+	// if( $_GET['page'] == DT_CCPT_PAGESLUG )
+	// 	$form = apply_filters( 'cpt_page_defaults', $form );
 
-	$result = array();
-	foreach ($form as $filter) {
-		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_CPT_OPTION );
-	}
-	DTForm::render( $result, get_option(DT_CPT_OPTION), true );
+	// $result = array();
+	// foreach ($form as $filter) {
+	// 	$result[] = apply_filters( 'dt_admin_options_page_render', $filter,  );
+	// }
+	DTForm::render( $form, get_option(DT_CPT_OPTION), true );
 }
 
 function dt_main_settings(){

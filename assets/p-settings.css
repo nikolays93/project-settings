@@ -1,0 +1,21 @@
+#adminmenu li {
+	position: relative;
+}
+#adminmenu li .after {
+	position: absolute;
+	z-index: 100;
+	top: 0;
+	right: 0;
+	display: block;
+	text-align: center;
+	width: 34px;
+	height: 34px;
+	color: #444;
+	opacity: 1;
+}
+#adminmenu li .after.hide {
+	color: #fff;
+}
+#adminmenu>li>.after {
+	line-height: 34px;
+}

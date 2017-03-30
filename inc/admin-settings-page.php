@@ -2,11 +2,17 @@
 
 namespace DTSettings;
 
+function page_description(){
+	echo apply_filters( 'the_content', 'На этой странице вы непременно смогёте' );
+}
+add_action( DT_GLOBAL_PAGESLUG . '_after_title', 'DTSettings\page_description', 8, 1 );
+
 function get_not_hide_button(){ //has html
 	$add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
 
 	echo '<input type="button" id="setNotHide" class="button'.$add_class.'" value="Показать скрытые меню (для браузера)">';
 }
+add_action( DT_GLOBAL_PAGESLUG . '_after_title', 'DTSettings\get_not_hide_button', 10, 1 );
 
 new dtAdminPage( DT_GLOBAL_PAGESLUG,
 	array(
@@ -14,15 +20,10 @@ new dtAdminPage( DT_GLOBAL_PAGESLUG,
 		'title' => __('Project settings','domain'),
 		'menu' => __('Project settings','domain'),
 		),
-	'page_settings_body' );
+	'DTSettings\page_settings_body' );
+
 function page_settings_body(){
-	echo "Some test";
-}
-
-function options_settings() {
-	register_setting( DT_GLOBAL_PAGESLUG, DT_GLOBAL_PAGESLUG, array($this, 'validate_settings') );
-
-	$arr_args = array(
+	$form = array(
 		array(
 			'type'      => 'checkbox',
 			'id'        => 'check_updates',
@@ -40,37 +41,32 @@ function options_settings() {
 			'id'        => 'clear_toolbar',
 			'label'		=> 'Не очищать верхнее меню',
 			'desc'      => 'Показывать все стандартные ссылки верхнего админ. меню (тулбара).',
-			)
-		);
-	$this->add_section('Основные настройки', $arr_args, 'global');
-	
-	$arr_args = array(
+			),
 		array(
-			'type'      => 'hidden_textarea',
-			'id'        => 'menu',
+			'type'      => 'checkbox',
+			'id'        => 'pre_menu',
 			'label'		=> 'Не скрывать меню',
 			'desc'      => '',
 			),
 		array(
-			'type'      => 'hidden_textarea',
-			'id'        => 'sub_menu',
+			'type'      => 'checkbox',
+			'id'        => 'pre_sub_menu',
 			'label'		=> 'Не скрывать под меню',
 			'desc'      => '',
+			),
+		array(
+			'type'      => 'hidden',
+			'id'        => 'menu',
+			),
+		array(
+			'type'      => 'hidden',
+			'id'        => 'sub_menu',
 			)
 		);
-	$this->add_section('Настройки меню', $arr_args, 'menu', 'get_not_hide_button');
+
+	$result = array();
+	foreach ($form as $filter) {
+		$result[] = apply_filters( 'dt_admin_options_page_render', $filter, DT_GLOBAL_PAGESLUG );
+	}
+	DTForm::render( $result, get_option(DT_GLOBAL_PAGESLUG), true );
 }
-
-
-function get_admin_assets(){
-	$opts = get_option( DT_GLOBAL_PAGESLUG, false );
-
-	wp_enqueue_script(  'project-settings', plugins_url( basename(__DIR__) . '/assets/project-settings.js' ), array('jquery') );
-	wp_localize_script( 'project-settings', 'menu_disabled', array(
-		'menu' => _isset_empty($opts['menu']),
-		'sub_menu' => _isset_empty($opts['sub_menu']),
-		) );
-}
-
-if(isset($_GET['page']) && $_GET['page'] == DT_GLOBAL_PAGESLUG )
-	add_action( 'admin_enqueue_scripts', array($this, 'get_admin_assets') );
