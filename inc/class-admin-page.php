@@ -54,8 +54,8 @@ class dtAdminPage
 		do_action('add_meta_boxes_'.$this->screen, null);
 		do_action('add_meta_boxes', $this->screen, null);
 
-		// User can choose between 1 or 2 columns (default 2)
-		add_screen_option('layout_columns', array('max' => 2, 'default' => 2) );
+		$columns = apply_filters( $this->page . '_columns', 1 );
+		add_screen_option('layout_columns', array('max' => $columns, 'default' => $columns) );
 
 		// Enqueue WordPress' script for handling the metaboxes
 		wp_enqueue_script('postbox');
@@ -76,8 +76,11 @@ class dtAdminPage
 
 			<?php screen_icon(); ?>
 			<h2> <?php echo esc_html($this->args['title']);?> </h2>
+			
+			<?php do_action( $this->page . '_after_title'); ?>
 
 			<form id="ccpt" enctype="multipart/form-data" action="options.php" method="post">  
+				<?php do_action( $this->page . '_before_form_inputs'); ?>
 				<?php
 				/* Used to save closed metaboxes and their order */
 				wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
@@ -109,9 +112,13 @@ class dtAdminPage
 					// add hidden settings
 					settings_fields( $this->option_name );
 				?>
+				<?php do_action( $this->page . '_after_form_inputs'); ?>
 			</form>
 
 		</div><!-- .wrap -->
+		
+		<?php do_action( $this->page . '_after_page_wrap'); ?>
+
 		<div class="clear" style="clear: both;"></div>
 		<pre>
 			<?php var_dump(get_option( $this->option_name )); ?>
