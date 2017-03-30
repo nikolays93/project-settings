@@ -62,6 +62,8 @@ function project_settings_activation(){
 	$opt = get_option( DT_GLOBAL_PAGESLUG );
 	if( $opt === false || sizeof($opt) < 1)
 		DTSettings\set_defaults();
+
+	add_option( DT_CPT_OPTION, array() );
 }
 
 function check_do_actions( $opts = false ){

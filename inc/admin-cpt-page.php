@@ -18,10 +18,8 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 	'DTSettings\page_cpt_body', DT_CPT_OPTION, 'DTSettings\cpt_validate' );
 
 function cpt_validate( $input ){
-	file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
+	// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
 	$post_types = get_option( DT_CPT_OPTION );
-	if( ! $post_types )
-		$post_types = array();
 
 	$slug = _isset_false( $input['type_slug'], 1 );
 	if( $slug ){
