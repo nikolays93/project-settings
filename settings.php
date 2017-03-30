@@ -67,7 +67,8 @@ function project_settings_activation(){
 }
 
 function check_do_actions( $opts = false ){
-	if( ! isset($_COOKIE['developer']) || ! isset($_GET['page']) || $_GET['page'] != DT_GLOBAL_PAGESLUG )
+	$page = isset($_GET['page']) ? $_GET['page'] : '';
+	if( empty($_COOKIE['developer']) && !in_array($page, array(DT_GLOBAL_PAGESLUG, DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG)) )
 		add_action( 'admin_menu', 'dt_hide_menus_init', 9999 );
 
 	if( !$opts )
@@ -99,28 +100,18 @@ function set_defaults(){
 
 check_do_actions( get_option( DT_GLOBAL_PAGESLUG ) );
 
-/*
-		<style>
-			#adminmenu li {
-				position: relative;
-			}
-			#adminmenu li .after {
-				position: absolute;
-				z-index: 100;
-				top: 0;
-				right: 0;
-				display: block;
-				text-align: center;
-				width: 34px;
-				height: 34px;
-				color: #444;
-				opacity: 1;
-			}
-			#adminmenu li .after.hide {
-				color: #fff;
-			}
-			#adminmenu>li>.after {
-				line-height: 34px;
-			}
-		</style>
- */
+function get_admin_assets(){
+	$opts = get_option( DT_GLOBAL_PAGESLUG, false );
+
+	wp_enqueue_style( 'project-settings', plugins_url(basename(__DIR__) . '/assets/p-settings.css'), array(), '1.0' );
+	wp_enqueue_script(  'project-settings', plugins_url(basename(__DIR__) . '/assets/project-settings.js'), array('jquery') );
+	wp_localize_script( 'project-settings', 'menu_disabled', array(
+		'menu' => _isset_empty($opts['menu']),
+		'sub_menu' => _isset_empty($opts['sub_menu']),
+		) );
+}
+
+if( isset($_GET['page']) ){
+	if(in_array( $_GET['page'], array(DT_GLOBAL_PAGESLUG, DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG) ))
+		add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
+}
