@@ -1,5 +1,5 @@
 <?php
-// ver 2.0
+// ver 2.3
 
 namespace DTSettings;
 
@@ -28,20 +28,29 @@ if(! has_filter( 'dt_admin_options' ) ){
       return $inputs;
 
     foreach ( $inputs as &$input ) {
-      if( is_array($input['id']) ){
-        foreach ($input['id'] as $key => $value) {
-          $input['id'] = $value;
+      if( isset($input['name']) && is_array($input['name']) ){
+        $key = key($input['name']);
+        $value = $input['name'][$key];
+
+        $input['name'] = "{$option_name}[{$key}][{$value}]";
+      }
+
+      if( isset($input['id']) && is_array($input['id']) ){
+        $key = key($input['id']);
+        $input['id'] = $value = $input['id'][$key];
+
+        if( !isset($input['name']) )
           $input['name'] = "{$option_name}[{$key}][{$value}]";
-        }
       }
-      else {
+      
+      if( ! isset($input['name']) )
         $input['name'] = "{$option_name}[{$input['id']}]";
-      }
+
       $input['check_active'] = 'id';
     }
     return $inputs;
   }
-  add_filter( 'dt_admin_options', 'DTSettings\admin_page_options_filter', 10, 1 );
+  add_filter( 'dt_admin_options', 'DTSettings\admin_page_options_filter', 10, 2 );
 }
 
 class DTForm
@@ -115,7 +124,8 @@ class DTForm
       $value   = _isset_false($input['value']);
       $check_active = _isset_false($input['check_active'], 1);
       
-      _isset_default( $input['placeholder'], $default );
+      if( $input['type'] != 'checkbox' && $input['type'] != 'radio' )
+        _isset_default( $input['placeholder'], $default );
 
       if( isset($input['desc']) ){
         $desc = $input['desc'];
@@ -147,7 +157,13 @@ class DTForm
       }
       else {
         // if text, textarea, number, email..
-          $input['value'] = $entry = ($active_value) ? $active_value : $default;
+        $entry = $active_value;
+        $placeholder = $default;
+      }
+
+      foreach ( array( $input['name'], $input['id'] ) as &$value) {
+        if( is_array($value) )
+          $value = key($value) . "[{$value}]";
       }
 
       $func = 'render_' . $input['type'];

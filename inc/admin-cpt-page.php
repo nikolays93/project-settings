@@ -32,8 +32,11 @@ function array_filter_recursive($input){
 } 
 
 function cpt_validate( $input ){
-	// file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
+	file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
 	$post_types = get_option( DT_CPT_OPTION );
+
+	if(isset($input['supports']))
+		$input['supports'] = array_keys($input['supports']);
 
 	$slug = _isset_false( $input['post_type_name'], 1 );
 	
@@ -52,7 +55,7 @@ function page_cpt_body(){
 	echo "Use http://wp-default.lc/wp-admin/options-general.php?page=edit_cpt&post_type=post for load \$active";	
 
 	DTForm::render(
-		apply_filters( 'dt_admin_options', $cpt_settings['cpt_global']),
+		apply_filters( 'dt_admin_options', $cpt_settings['cpt_global'], DT_CPT_OPTION),
 		get_option(DT_CPT_OPTION),
 		true );
 }
@@ -77,7 +80,7 @@ function dt_labels(){
 	global $cpt_settings;
 
 	DTForm::render(
-		apply_filters( 'dt_admin_options', $cpt_settings['labels']),
+		apply_filters( 'dt_admin_options', $cpt_settings['labels'], DT_CPT_OPTION),
 		get_option(DT_CPT_OPTION),
 		true );
 }
@@ -86,14 +89,14 @@ function dt_main_settings(){
 	global $cpt_settings;
 
 	DTForm::render(
-		apply_filters( 'dt_admin_options', $cpt_settings['cpt_main']),
+		apply_filters( 'dt_admin_options', $cpt_settings['cpt_main'], DT_CPT_OPTION),
 		get_option(DT_CPT_OPTION),
 		false,
 		array( 'hide_desc' => true )
 		);
 
 	DTForm::render( 
-		apply_filters( 'dt_admin_options', $cpt_settings['cpt_main_textfields']),
+		apply_filters( 'dt_admin_options', $cpt_settings['cpt_main_textfields'], DT_CPT_OPTION),
 		get_option(DT_CPT_OPTION),
 		true,
 		array(
@@ -109,7 +112,7 @@ function dt_supports(){
 	echo "see more about add_post_type_support()";
 
 	DTForm::render(
-		apply_filters( 'dt_admin_options', $cpt_settings['supports']),
+		apply_filters( 'dt_admin_options', $cpt_settings['supports'], DT_CPT_OPTION),
 		get_option(DT_CPT_OPTION) );
 }
 
