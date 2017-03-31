@@ -20,35 +20,9 @@ new dtAdminPage( DT_ECPT_PAGESLUG,
 		),
 	'DTSettings\page_cpt_body', DT_CPT_OPTION, 'DTSettings\cpt_validate' );
 
-
-function array_filter_recursive($input){ 
-	foreach ($input as &$value){ 
-		if (is_array($value)){ 
-			$value = array_filter_recursive($value); 
-		} 
-	}
-
-	return array_filter($input); 
-} 
-
-function cpt_validate( $input ){
-	file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($input, 1) );
-	$post_types = get_option( DT_CPT_OPTION );
-
-	if(isset($input['supports']))
-		$input['supports'] = array_keys($input['supports']);
-
-	$slug = _isset_false( $input['post_type_name'], 1 );
-	
-	if( $slug )
-		$post_types[$slug] = array_filter_recursive( $input );
-	
-	return $post_types;
-}
-
 // Define the body content for the pag
 function page_cpt_body(){
-	//delete_option( DT_CPT_OPTION );
+	// delete_option( DT_CPT_OPTION );
 	
 	global $cpt_settings;
 
@@ -114,6 +88,68 @@ function dt_supports(){
 	DTForm::render(
 		apply_filters( 'dt_admin_options', $cpt_settings['supports'], DT_CPT_OPTION),
 		get_option(DT_CPT_OPTION) );
+}
+
+
+function array_filter_recursive($input){ 
+	foreach ($input as &$value){ 
+		if (is_array($value)){ 
+			$value = array_filter_recursive($value); 
+		} 
+	}
+
+	return array_filter($input); 
+} 
+
+function cpt_validate( $type ){
+	
+	/**
+	 * Get all options
+	 */
+	global $cpt_settings;
+	
+	$builtin_defaults = $implode = array();
+	foreach ($cpt_settings as $cpt_setting) {
+		$implode += $cpt_setting;
+	}
+
+	foreach ($implode as $setting) {
+		if(is_array($setting['id'])){
+			foreach ($setting['id'] as $value) {
+				$setting['id'] = $value;
+				break;
+			}
+		}
+		$builtin_defaults[ $setting['id'] ] = $setting;
+	}
+	
+	/**
+	 * Add New Post Type in exists
+	 */
+	$post_types = get_option( DT_CPT_OPTION );
+
+	if(isset($type['supports']))
+		$type['supports'] = array_keys($type['supports']);
+
+	$slug = _isset_false( $type['post_type_name'], 1 );
+	
+	if( $slug ) {
+		foreach ($type as $key => &$arg) {
+			if( isset($builtin_defaults[$key]['default']) && $builtin_defaults[$key]['type'] == 'checkbox' ){
+					$arg = ( $arg ) ? true : false;
+					$test[] = $arg;
+			}
+
+			if($arg == 'on')
+				$arg = true;
+		}
+		file_put_contents( plugin_dir_path( __FILE__ ) .'/debug.log', print_r($test, 1) );
+
+		$post_types[$slug] = $type;//array_filter_recursive( $type );
+	}
+
+	
+	return $post_types;
 }
 
   //      if(isset($args['public']) && $args['public'] == false){
