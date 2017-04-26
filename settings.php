@@ -28,7 +28,7 @@ namespace DTSettings;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-define('DT_PS_DIR_PATH', __DIR__);
+define('DTS_DIR', __DIR__);
 define('DT_GLOBAL_PAGESLUG', 'project-settings');
 define('DT_CPT_OPTION', 'project-types');
 define('DT_CCPT_PAGESLUG', 'create_cpt');
@@ -46,16 +46,13 @@ if(!function_exists('is_wp_debug')){
   }
 }
 
-// require_once(__DIR__ . '/inc/cpt-actions.php');
-require_once(__DIR__ . '/inc/settings-actions.php');
+require_once(DTS_DIR . '/inc/actions.php');
 
 if( is_admin() ){
-	require_once(__DIR__ . '/inc/class-admin-page.php');
-	require_once(__DIR__ . '/inc/class-form-render.php');
+	require_once(DTS_DIR . '/inc/WPAdminPageRender/class-wp-admin-page-render.php');
+	require_once(DTS_DIR . '/inc/WPForm-render/class-wp-form-render.php');
 
-	require_once(__DIR__ . '/inc/options.php');
-	require_once(__DIR__ . '/inc/admin-cpt-page.php');
-	require_once(__DIR__ . '/inc/admin-settings-page.php');
+	require_once(DTS_DIR . '/inc/admin-page.php');
 }
 
 register_activation_hook( __FILE__, 'DTSettings\project_settings_activation' );
@@ -119,7 +116,6 @@ if( isset($_GET['page']) ){
 	if(in_array( $_GET['page'], array(DT_GLOBAL_PAGESLUG, DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG) ))
 		add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
 }
-
 
 // register_post_type('post_type_name', array(
 // 		'label'  => null,

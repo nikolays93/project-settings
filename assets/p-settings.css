@@ -28,7 +28,9 @@
 	right: 25px;
 	line-height: 36px;
 }
-
+input[type="text"], input[type="number"]{
+	display: block;
+}
 input[type="number"] {
 	width: 80px;
 }
