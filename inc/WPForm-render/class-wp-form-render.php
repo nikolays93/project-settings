@@ -1,7 +1,15 @@
 <?php
-// ver 2.3
-
 namespace DTSettings;
+/**
+ * Class Name: WPForm ( :: render )
+ * Class URI: https://github.com/nikolays93/WPForm
+ * Description: render forms as wordpress fields
+ * Version: 1.1
+ * Author: NikolayS93
+ * Author URI: https://vk.com/nikolays_93
+ * License: GNU General Public License v2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ */
 
 function _isset_default(&$var, $default, $unset = false){
   $result = $var = isset($var) ? $var : $default;
@@ -9,72 +17,116 @@ function _isset_default(&$var, $default, $unset = false){
     $var = FALSE;
   return $result;
 }
+function _isset_false(&$var, $unset = false){ return _isset_default( $var, false, $unset ); }
+function _isset_empty(&$var, $unset = false){ return _isset_default( $var, '', $unset ); }
 
-function _isset_false(&$var, $unset = false){
-  return _isset_default( $var, false, $unset );
-}
+/**
+ * change names for wordpress options
+ * @param  array  $inputs      rendered inputs
+ * @param  string $option_name name of wordpress option ( @see get_option() )
+ * @return array               filtred inputs
+ */
+function admin_page_options_filter( $inputs, $option_name = false ){
+  if( ! $option_name )
+    $option_name = _isset_false($_GET['page']);
 
-function _isset_empty(&$var, $unset = false){
-  return _isset_default( $var, '', $unset );
-}
-
-
-if(! has_filter( 'dt_admin_options' ) ){
-  function admin_page_options_filter( $inputs, $option_name = false ){
-    if( ! $option_name )
-      $option_name = _isset_false($_GET['page']);
-
-    if( ! $option_name )
-      return $inputs;
-
-    foreach ( $inputs as &$input ) {
-      if( isset($input['name']) && is_array($input['name']) ){
-        $key = key($input['name']);
-        $value = $input['name'][$key];
-
-        $input['name'] = "{$option_name}[{$key}][{$value}]";
-      }
-
-      if( isset($input['id']) && is_array($input['id']) ){
-        $key = key($input['id']);
-        $input['id'] = $value = $input['id'][$key];
-
-        if( !isset($input['name']) )
-          $input['name'] = "{$option_name}[{$key}][{$value}]";
-      }
-      
-      if( ! isset($input['name']) )
-        $input['name'] = "{$option_name}[{$input['id']}]";
-
-      $input['check_active'] = 'id';
-    }
+  if( ! $option_name )
     return $inputs;
-  }
-  add_filter( 'dt_admin_options', 'DTSettings\admin_page_options_filter', 10, 2 );
-}
 
-class DTForm
-{
-  private static function is_checked( $name, $value, $active, $default ){
-    if( $active || $default ){
-      if( $value ){ // str or bool
-        if( is_array($active) ){
-          if( in_array($value, $active) )
-            return true;
+  if( isset($inputs['id']) )
+    $inputs = array($inputs);
+
+  foreach ( $inputs as &$input ) {
+    if( isset($input['name']) )
+      $input['name'] = "{$option_name}[{$input['name']}]";
+    else
+      $input['name'] = "{$option_name}[{$input['id']}]";
+    
+    $input['check_active'] = 'id';
+  }
+  return $inputs;
+}
+add_filter( 'DTSettings\dt_admin_options', 'DTSettings\admin_page_options_filter', 10, 2 );
+
+class WPForm {
+  static protected $clear_value;
+
+  /**
+   * EXPEREMENTAL!
+   * Get ID => Default values from $render_data
+   * @param  array() $render_data
+   * @return array(array(ID=>default),ar..)
+   */
+  public static function defaults( $render_data ){
+    $defaults = array();
+    if(empty($render_data))
+      return $defaults;
+
+    if( isset($render_data['id']) )
+        $render_data = array($render_data);
+
+    foreach ($render_data as $input) {
+      if(isset($input['default']) && $input['default']){
+        $input['id'] = str_replace('][', '_', $input['id']);
+        $defaults[$input['id']] = $input['default'];
+      }
+    }
+
+    return $defaults;
+  }
+  
+  /**
+   * EXPEREMENTAL! todo: add recursive handle
+   * @param  string  $option_name      
+   * @param  string  $sub_name         $option_name[$sub_name]
+   * @param  boolean $is_admin_options recursive split value array key with main array
+   * @return array                     installed options
+   */
+  public static function active($option_name, $sub_name = false, $is_admin_options = false){
+    $active = get_option( $option_name, array() );
+    if( $sub_name && isset($active[$sub_name]) && is_array($active[$sub_name]) )
+      $active = $active[$sub_name];
+    elseif( $sub_name && !isset($active[$sub_name]) )
+      return false;
+
+    if(!is_array($active))
+        return false;
+
+    if( $is_admin_options === true ){
+      $result = array();
+      foreach ($active as $key => $value) {
+        if( is_array($value) ){
+          foreach ($value as $key2 => $value2) {
+            $result[$key . '_' . $key2] = $value2;
+          }
         }
         else {
-          if( $value == $active )
-            return true;
+          $result[$key] = $value;
         }
       }
-      else {
-        if( ($default || $active != '') && $active != 'false' ) // str or bool
-          return true;
-      }
+
+      return $result;
+      // function self_function($active){
+      //   foreach ($active as &$key => &$value) {
+      //     if( is_array($value) ){
+      //       $key = 
+      //     }
+      //   }
+      // }
     }
-    return false;
+
+    return $active;
   }
 
+  /**
+   * Render form items
+   * @param  boolean $render_data array with items ( id, name, type, options..)
+   * @param  array   $active      selected options from form items
+   * @param  boolean $is_table    is a table
+   * @param  array   $args        array of args (item_wrap, form_wrap, label_tag, hide_desc) @see $default_args
+   * @param  boolean $is_not_echo true = return, false = echo
+   * @return html                 return or echo
+   */
   public static function render(
     $render_data = false,
     $active = array(),
@@ -89,17 +141,23 @@ class DTForm
         echo '<pre> Файл настроек не найден </pre>';
       return false;
     }
-    if( isset($render_data['type']) )
+    
+    if( isset($render_data['id']) )
         $render_data = array($render_data);
 
-
+    if($active === false)
+      $active = array();
+    
     $default_args = array(
       'item_wrap' => array('<p>', '</p>'),
       'form_wrap' => array('<table class="table form-table"><tbody>', '</tbody></table>'),
       'label_tag' => 'th',
-      'hide_desc' => false
+      'hide_desc' => false,
+      'clear_value' => 'false'
       );
     $args = array_merge($default_args, $args);
+
+    self::$clear_value = esc_attr( $args['clear_value'] );
 
     if( $args['item_wrap'] === false )
       $args['item_wrap'] = array('', '');
@@ -140,20 +198,23 @@ class DTForm
       }
 
       if( !isset($input['name']) )
-          $input['name'] = _isset_empty($input['id']); //isset($input['id']) ? $input['id'] : '';
+          $input['name'] = _isset_empty($input['id']);
+
+      $input['id'] = str_replace('][', '_', $input['id']);
       
       /**
        * set values
        */
       $active_name = $check_active ? $input[$check_active] : str_replace('[]', '', $input['name']);
-      $active_value = _isset_false($active[$active_name]);
+      $active_value = ( is_array($active) && sizeof($active) > 0 && isset($active[$active_name]) ) ?
+         $active[$active_name] : false;
 
       $entry = '';
       if($input['type'] == 'checkbox' || $input['type'] == 'radio'){
-        $entry = self::is_checked( $active_name, $value, $active_value, $default );
+        $entry = self::is_checked( $value, $active_value, $default );
       }
       elseif( $input['type'] == 'select' ){
-        $entry = ($active_value) ? $active_item : $default;
+        $entry = ($active_value) ? $active_value : $default;
       }
       else {
         // if text, textarea, number, email..
@@ -161,19 +222,29 @@ class DTForm
         $placeholder = $default;
       }
 
-      foreach ( array( $input['name'], $input['id'] ) as &$value) {
-        if( is_array($value) )
-          $value = key($value) . "[{$value}]";
+      switch ($input['type']) {
+        case 'text':
+        case 'hidden':
+        case 'submit':
+        case 'button':
+        case 'number':
+        case 'email':
+          $func = 'render_text';
+          break;
+        
+        default:
+          $func = 'render_' . $input['type'];
+          break;
       }
-
-      $func = 'render_' . $input['type'];
+      
       $input_html = self::$func($input, $entry, $is_table, $label);
 
       if( $desc ){
+        // todo: set tooltip
         if( isset($args['hide_desc']) && $args['hide_desc'] === true )
           $desc_html = "<div class='description' style='display: none;'>{$desc}</div>";
         else
-          $desc_html = "<div class='description'>{$desc}</div>";
+          $desc_html = "<span class='description'>{$desc}</span>";
       } else {
         $desc_html = '';
       }
@@ -205,18 +276,58 @@ class DTForm
     else
       echo $result;
   }
-  
+
+  /**
+   * check if is checked ( called( $value, $active_value, $default ) )
+   * @param  mixed         $value   ['value'] array setting (string || boolean)(!isset ? false)
+   * @param  string||false $active  value from $active option
+   * @param  mixed         $default ['default'] array setting (string || boolean)(!isset ? false)
+   * 
+   * @return boolean       checked or not
+   */
+  private static function is_checked( $value, $active, $default ){
+    if( $active === false && $value )
+      return true;
+
+    $checked = ( $active === false ) ? false : true;
+    if( $active === 'false' || $active === 'off' || $active === '0' )
+      $active = false;
+
+    if( $active === 'true'  || $active === 'on'  || $active === '1' )
+      $active = true;
+
+    if( $active || $default ){
+      if( $value ){
+        if( is_array($active) ){
+          if( in_array($value, $active) )
+            return true;
+        }
+        else {
+          if( $value == $active || $value === true )
+            return true;
+        }
+      }
+      else {
+        if( $active || (!$checked && $default) )
+          return true;
+      }
+      return false;
+    }
+  }
+
   public static function render_checkbox( $input, $checked, $is_table, $label = '' ){
     $result = '';
 
-    if( !isset($input['value']) || $input['value'] === false )
+    if( empty($input['value']) )
       $input['value'] = 'on';
 
     if( $checked )
       $input['checked'] = 'true';
 
-    if( apply_filters( 'clear_checkbox_render', false ) )
-      $result .= "<input name='{$input['name']}' type='hidden' value=''>\n";
+    // if $clear_value === false dont use defaults (couse default + empty value = true)
+    $cv = self::$clear_value;
+    if( false !== $cv )
+      $result .= "<input name='{$input['name']}' type='hidden' value='{$cv}'>\n";
 
     $result .= "<input";
     foreach ($input as $attr => $val) {
@@ -302,20 +413,5 @@ class DTForm
     $result .= ">";
 
     return $result;
-  }
-
-  public static function render_hidden( $input, $entry, $is_table, $label = '' ){
-
-     return self::render_text($input, $entry, $is_table, $label);
-  }
-
-  public static function render_number($input, $entry, $is_table, $label = ''){
-    
-    return self::render_text($input, $entry, $is_table, $label);
-  }
-  
-  public static function render_email($input, $entry, $is_table, $label = ''){
-
-    return self::render_text($input, $entry, $is_table, $label);
   }
 }
