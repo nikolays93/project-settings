@@ -102,12 +102,14 @@ function get_admin_assets(){
 	$opts = get_option( DT_GLOBAL_PAGESLUG, false );
 
 	wp_enqueue_style( 'project-settings', plugins_url(basename(__DIR__) . '/assets/p-settings.css'), array(), '1.0' );
-	wp_enqueue_script(  'project-settings', plugins_url(basename(__DIR__) . '/assets/project-settings.js'), array('jquery') );
+	wp_enqueue_script(  'project-settings', plugins_url(basename(__DIR__) . '/assets/project-settings.js'), array('jquery'), '1.0', true );
 	wp_localize_script( 'project-settings', 'menu_disabled', array(
 		'menu' => _isset_empty($opts['menu']),
 		'sub_menu' => _isset_empty($opts['sub_menu']),
 		'edit_cpt_page' => DT_ECPT_PAGESLUG
 		) );
+	wp_enqueue_script(  'data-actions', plugins_url(basename(__DIR__) . '/assets/jquery.data-actions.js'), array('jquery'), '1.1', true );
+
 
 	wp_localize_script( 'project-settings', 'post_types', array_values( get_post_types() ) );
 }
