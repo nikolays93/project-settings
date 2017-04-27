@@ -84,6 +84,12 @@ pcjq(function( $ ) {
         $(this).select();
       }
     });
-
+    // change referer
+    
+    
+    $('form#options').on('submit', function(e){
+      var val = $('[name="_wp_http_referer"]').val() + '&post-type=';
+      $('[name="_wp_http_referer"]').val( val + $('input#post_type_name').val() );
+    }); 
   });
 });

@@ -31,7 +31,9 @@ jQuery(function($){
     eval( '$( ' + evalTarget + ' ).' + action + '(' + props + ');' );
   }
 
-  function doAction($obj, target, trigger, action = false){
+  function doAction($obj, target, trigger, action ){
+    if(typeof action === 'undefined') action = false;
+    
     var evalTarget = ( target !== 'this' ) ? "'"+target+"'" : 'this';
     var loadAction = (trigger == 'load') ? action : $obj.data('load');
     if( loadAction )
@@ -136,5 +138,4 @@ jQuery(function($){
       });
     }
   });
-  
 });

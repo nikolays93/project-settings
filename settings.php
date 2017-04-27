@@ -119,9 +119,8 @@ if( isset($_GET['page']) ){
 		add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
 }
 
-// register_post_type('post_type_name', array(
+//register_post_type('post_type_name', array(
 // 		'label'  => null,
-// 		'labels' => array(),
 // 		'description'         => '',
 // 		'public'              => false,
 // 		'publicly_queryable'  => null,

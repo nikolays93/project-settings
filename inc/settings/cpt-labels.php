@@ -1,6 +1,13 @@
 <?php
 $plural = $single = '';
 $cpt = array(
+	
+	array(
+		'id' => 'labels][name',
+		'type' => 'text',
+		'label' => 'Name',
+		'desc' => ''),
+
 	array(
 		'id' => 'labels][add_new',
 		'type' => 'text',
@@ -8,6 +15,14 @@ $cpt = array(
 		'data-pattern' => 'Добавить [single]',
 		'label' => 'Add new',
 		'desc' => 'The add new text. The default is "Add New" for both hierarchical and non-hierarchical post types. When internationalizing this string, please use a gettext context matching your post type.'),
+
+	array(
+		'id' => 'labels][menu_name',
+		'type' => 'text',
+		'label' => 'Множественное число',
+		'desc' => 'display left menu label. same as name (if empty)',
+		'placeholder' => 'к пр. Новости'
+		),
 
 	array(
 		'id' => 'labels][add_new_item',
@@ -73,5 +88,5 @@ $cpt = array(
 		'label' => 'Not found in Trash',
 		'desc' => 'Default is No posts found in Trash/No pages found in Trash.'),
 	);
-
+	// parent_item_colon
 return $cpt;

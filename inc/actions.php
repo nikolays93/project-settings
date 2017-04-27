@@ -86,3 +86,13 @@ function dt_hide_menus_init(){
 		}
 	}
 }
+
+function dt_register_custom_types() {
+	$all_cpts = get_option(DT_CPT_OPTION, array() );
+	if( is_array($all_cpts) && sizeof($all_cpts) > 0 ){
+		foreach ($all_cpts as $cpt => $args) {
+			register_post_type( $cpt, $args );
+		}
+	}
+}
+add_action( 'init', 'dt_register_custom_types' );

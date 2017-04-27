@@ -9,18 +9,30 @@ $cpt = array(
 		'required' => 'true'
 		),
 	array(
-		'id' => 'singular_name',
+		'id' => 'labels][singular_name',
 		'type' => 'text',
 		'label' => 'Единственное число',
 		'desc' => 'name for one object of this post type.',
 		'placeholder' => 'к пр. Новость'
 		),
 	array(
-		'id' => 'menu_name',
+		'id' => 'label',
 		'type' => 'text',
 		'label' => 'Множественное число',
-		'desc' => 'display left menu label. same as name (if empty)',
+		'desc' => '',
 		'placeholder' => 'к пр. Новости'
+		),
+	array(
+		'id' => 'html_1',
+		'type' => 'html',
+		'value' => "Следующие настройки заполнять не обязательно:"
+		// todo: random string
+		// "Если вы не знаете как использовать следующие настройки, рекомендую оставить по умолчанию:"
+		),
+	array(
+		'id' => 'description',
+		'type' => 'textarea',
+		'label' => 'Описание',
 		),
 	);
 

@@ -157,7 +157,7 @@ class WPForm {
       );
     $args = array_merge($default_args, $args);
 
-    self::$clear_value = esc_attr( $args['clear_value'] );
+    self::$clear_value = $args['clear_value'];
 
     if( $args['item_wrap'] === false )
       $args['item_wrap'] = array('', '');
@@ -254,6 +254,11 @@ class WPForm {
       }
       elseif( $input['type'] == 'hidden' ){
         $hidden[] = $before . $input_html . $after;
+      }
+      elseif( $input['type'] == 'html' ){
+        $html[] = $args['form_wrap'][1];
+        $html[] = $before . $input_html . $after;
+        $html[] = $args['form_wrap'][0];
       }
       else {
         $item = $before . $args['item_wrap'][0]. $input_html .$args['item_wrap'][1] . $after;
@@ -413,5 +418,10 @@ class WPForm {
     $result .= ">";
 
     return $result;
+  }
+
+  public static function render_html( $input, $entry, $is_table, $label = '' ){
+
+    return $input['value'];
   }
 }

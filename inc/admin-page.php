@@ -7,7 +7,7 @@ namespace DTSettings;
 add_filter( DT_GLOBAL_PAGESLUG . '_columns', function(){return 2;} );
 add_action( DT_GLOBAL_PAGESLUG . '_inside_side_container', 'submit_button', 20 );
 
-if( ! _isset_false($_GET['post_type'])){
+if( ! _isset_false($_GET['post-type'])){
 	add_filter( 'DTSettings\dt_admin_options', function($inputs, $option){
 		$defaults = array(
 			'public' => 'on',
@@ -37,22 +37,21 @@ if( ! _isset_false($_GET['post_type'])){
 		echo "Заполните данные ниже чтобы создать новый тип записи или нажмите на 'шестеренку настроек' типа записи в меню слева.";
 	}, 5);
 
-	add_action(DT_GLOBAL_PAGESLUG . '_inside_page_content', function(){
-		// todo: random string
-		echo "Следующие настройки заполнять не обязательно:";
-		// echo "Если вы не знаете как использовать следующие настройки, рекомендую оставить по умолчанию:";
-	}, 15);
+	// add_action(DT_GLOBAL_PAGESLUG . '_inside_page_content', function(){
+		
+	// }, 15);
 }
 
 function get_cpt_or_pt(){
-	// var_dump(WPForm::active( DT_CPT_OPTION, _isset_false($_GET['post_type']), true ));
 	$pt = _isset_false($_GET['post-type']);
-	$active = WPForm::active( DT_CPT_OPTION, $pt, true );
+	//_debug(WPForm::active( DT_CPT_OPTION, $pt, true ));
+	$active = WPForm::active( DT_CPT_OPTION, $pt );
 	if( ! $active && $pt ){
 		$active = get_post_type_object( $pt );
 	}
 	$act = (array)$active;
-	_debug($act);
+	$act['post_type_name'] = $pt;
+	return $act;
 }
 
 /**
@@ -87,7 +86,8 @@ $page->add_metabox( 'project-types-supports', 'Возможности типа �
 	WPForm::render(
     	apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
     	get_cpt_or_pt(),
-    	true
+    	true,
+    	array('clear_value' => false)
     	);
 });
 
@@ -144,16 +144,28 @@ function valid( $values ){
 	if( !is_array($all_cpts) )
 		return false;
 	
-	$values['labels'] = array_filter( $values['labels'] );
-	// $labels = array_filter( $values['labels'] );
-	// if(sizeof($labels >= 1))
-	// 	$values['labels'] = $labels;
-	// else
-	// 	unset($values['labels']);
-	
-	$values['name'] = $values['post_type_name'];
+	foreach ($values as $key => $value) {
+		if( ! $value )
+			unset($values[$key]);
+		elseif( $value == 'on' )
+			$values[$key] = true;
+
+		if( $key == 'labels' && is_array($value) ) {
+			foreach ($value as $lkey => $lvalue) {
+				if( $lvalue == '' )
+					unset($values[$key][$lkey]);
+			}
+			if(sizeof($value) < 1)
+				unset($values[$key]);
+		}
+
+		if($key == 'supports' && is_array($value) )
+			$values[$key] = array_keys( $value );
+	}
+
+	$name = $values['post_type_name'];
 	unset($values['post_type_name']);
-	$all_cpts[ $values['name'] ] = $values;
+	$all_cpts[ $name ] = $values;
 
 	file_put_contents( DTS_DIR . '/debug.log', array(print_r($globals, 1), print_r($all_cpts, 1)) );
 	return $all_cpts;
