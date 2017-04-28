@@ -1,4 +1,5 @@
 <?php
+
 $cpt = array(
 	array(
 		'id' => 'post_type_name',
@@ -35,5 +36,8 @@ $cpt = array(
 		'label' => 'Описание',
 		),
 	);
+
+if( isset($_GET['post-type']) && $_GET['post-type'] )
+	$cpt[0]['readonly'] = 'true';
 
 return $cpt;

@@ -88,10 +88,12 @@ function dt_hide_menus_init(){
 }
 
 function dt_register_custom_types() {
+	$builtin_types = get_post_types(array('_builtin' => true));
 	$all_cpts = get_option(DT_CPT_OPTION, array() );
 	if( is_array($all_cpts) && sizeof($all_cpts) > 0 ){
 		foreach ($all_cpts as $cpt => $args) {
-			register_post_type( $cpt, $args );
+			if( ! in_array($cpt, $all_cpts) )
+				register_post_type( $cpt, $args );
 		}
 	}
 }

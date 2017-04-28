@@ -7,7 +7,7 @@ namespace DTSettings;
 add_filter( DT_GLOBAL_PAGESLUG . '_columns', function(){return 2;} );
 add_action( DT_GLOBAL_PAGESLUG . '_inside_side_container', 'submit_button', 20 );
 
-if( ! _isset_false($_GET['post-type'])){
+if( ! _isset_false($_GET['post-type']) ){
 	add_filter( 'DTSettings\dt_admin_options', function($inputs, $option){
 		$defaults = array(
 			'public' => 'on',
@@ -32,26 +32,37 @@ if( ! _isset_false($_GET['post-type'])){
 		return $inputs;
 	}, 12, 2 );
 
-
 	add_action(DT_GLOBAL_PAGESLUG . '_inside_page_content', function(){
 		echo "Заполните данные ниже чтобы создать новый тип записи или нажмите на 'шестеренку настроек' типа записи в меню слева.";
 	}, 5);
-
-	// add_action(DT_GLOBAL_PAGESLUG . '_inside_page_content', function(){
-		
-	// }, 15);
 }
 
 function get_cpt_or_pt(){
 	$pt = _isset_false($_GET['post-type']);
-	//_debug(WPForm::active( DT_CPT_OPTION, $pt, true ));
-	$active = WPForm::active( DT_CPT_OPTION, $pt );
+	$active = WPForm::active( DT_CPT_OPTION, $pt, true );	
+
 	if( ! $active && $pt ){
 		$active = get_post_type_object( $pt );
+		$active = (array)$active;
+
+		if(isset($active['labels']) || isset($active->labels)){
+			foreach ((array)$active['labels'] as $key => $value) {
+				$active['labels_'.$key] = $value;
+			}
+			unset($active['labels']);			
+		}
+	} else {
+		foreach ($active as $key => $value) {
+			$support = explode('_', $key);
+			if($support[0] == 'supports'){
+				$active['supports_'.$value] = true;
+				unset( $active[$key] );
+			}
+		}
 	}
-	$act = (array)$active;
-	$act['post_type_name'] = $pt;
-	return $act;
+	
+	$active['post_type_name'] = $pt;
+	return $active;
 }
 
 /**
@@ -66,6 +77,17 @@ $page = new WPAdminPageRender( DT_GLOBAL_PAGESLUG,
 	'DTSettings\settings_page', DT_CPT_OPTION, 'DTSettings\valid' );
 
 function settings_page(){
+	/**
+	 * Redirect If Type Not Exists 
+	 */
+	$pt = _isset_false($_GET['post-type']);
+	$active = WPForm::active( DT_CPT_OPTION, $pt, true );
+	if( $pt && (!is_array($active) || ! in_array($pt, $active)) && ! get_post_type_object( $pt ) )
+		wp_redirect( '/wp-admin/options-general.php?page=project-settings' );
+
+	/**
+	 * Show Settings else
+	 */
 	WPForm::render(
 		apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt.php'), DT_CPT_OPTION ),
 		get_cpt_or_pt(),
@@ -84,11 +106,11 @@ $page->add_metabox( 'project-types-main', 'Настройки', function(){
 
 $page->add_metabox( 'project-types-supports', 'Возможности типа записи', function(){
 	WPForm::render(
-    	apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
-    	get_cpt_or_pt(),
-    	true,
-    	array('clear_value' => false)
-    	);
+		apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
+		get_cpt_or_pt(),
+		true,
+		array('clear_value' => false)
+		);
 });
 
 $page->add_metabox( 'project-types-labels', 'Надписи', function(){
