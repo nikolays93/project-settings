@@ -95,23 +95,25 @@ function settings_page(){
 		);
 }
 
-$page->add_metabox( 'project-types-main', 'Настройки', function(){
-	WPForm::render(
-    	apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-main.php'), DT_CPT_OPTION ),
-    	get_cpt_or_pt(),
-    	true,
-    	array('item_wrap' => false)
-    	);
-});
+if( !isset( $_GET['post-type'] ) || !array_key_exists($_GET['post-type'], get_editable_types()) ){
+	$page->add_metabox( 'project-types-main', 'Настройки', function(){
+		WPForm::render(
+			apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-main.php'), DT_CPT_OPTION ),
+			get_cpt_or_pt(),
+			true,
+			array('item_wrap' => false)
+			);
+	});
 
-$page->add_metabox( 'project-types-supports', 'Возможности типа записи', function(){
-	WPForm::render(
-		apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
-		get_cpt_or_pt(),
-		true,
-		array('clear_value' => false)
-		);
-});
+	$page->add_metabox( 'project-types-supports', 'Возможности типа записи', function(){
+		WPForm::render(
+			apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
+			get_cpt_or_pt(),
+			true,
+			array('clear_value' => false)
+			);
+	});
+}
 
 $page->add_metabox( 'project-types-labels', 'Надписи', function(){
 	WPForm::render(
@@ -171,6 +173,8 @@ function valid( $values ){
 			unset($values[$key]);
 		elseif( $value == 'on' )
 			$values[$key] = true;
+		elseif( $value == 'false' )
+			$values[$key] = false;
 
 		if( $key == 'labels' && is_array($value) ) {
 			foreach ($value as $lkey => $lvalue) {
@@ -189,6 +193,6 @@ function valid( $values ){
 	unset($values['post_type_name']);
 	$all_cpts[ $name ] = $values;
 
-	file_put_contents( DTS_DIR . '/debug.log', array(print_r($globals, 1), print_r($all_cpts, 1)) );
+	// file_put_contents( DTS_DIR . '/debug.log', array(print_r($globals, 1), print_r($all_cpts, 1)) );
 	return $all_cpts;
 }

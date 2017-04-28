@@ -1,7 +1,7 @@
 Array
 (
-    [menu] => edit-comments.php,users.php,tools.php,
-    [sub_menu] => index.php>index.php,index.php>update-core.php,edit.php?post_type=shop_order>edit.php?post_type=shop_order,edit.php?post_type=shop_order>edit.php?post_type=shop_coupon,edit.php?post_type=shop_order>admin.php?page=wc-reports,options-general.php>options-discussion.php,
+    [menu] => 
+    [sub_menu] => 
 )
 Array
 (
@@ -9,41 +9,25 @@ Array
         (
             [labels] => Array
                 (
+                    [singular_name] => Новость
+                    [add_new] => Добавить Новость
+                    [add_new_item] => Добавить Новость
+                    [new_item] => Новая Новость
+                    [edit_item] => Изменить Новость
+                    [view_item] => Показать Новость
+                    [all_items] => Все Новости
+                    [search_items] => Найти Новость
+                    [not_found] => Новости не найдены
+                    [not_found_in_trash] => Новости в корзине не найдены
                 )
 
+            [label] => Новости
             [public] => 1
             [publicly_queryable] => 1
             [show_ui] => 1
             [show_in_menu] => 1
             [rewrite] => 1
-            [has_archive] => 1
-            [hierarchical] => 1
-            [supports] => Array
-                (
-                    [0] => title
-                    [1] => editor
-                    [2] => thumbnail
-                    [3] => excerpt
-                    [4] => custom-fields
-                    [5] => page-attributes
-                )
-
-        )
-
-    [offers] => Array
-        (
-            [labels] => Array
-                (
-                    [singular_name] => Предложение
-                )
-
-            [label] => Предложения
-            [public] => 1
-            [publicly_queryable] => 1
-            [show_ui] => 1
-            [show_in_menu] => 1
-            [rewrite] => 1
-            [has_archive] => 1
+            [has_archive] => false
             [hierarchical] => 1
             [supports] => Array
                 (

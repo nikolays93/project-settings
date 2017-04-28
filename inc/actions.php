@@ -86,15 +86,69 @@ function dt_hide_menus_init(){
 		}
 	}
 }
+function get_editable_types(){
+	$custom_types = get_option(DT_CPT_OPTION, array() );
 
-function dt_register_custom_types() {
-	$builtin_types = get_post_types(array('_builtin' => true));
-	$all_cpts = get_option(DT_CPT_OPTION, array() );
-	if( is_array($all_cpts) && sizeof($all_cpts) > 0 ){
-		foreach ($all_cpts as $cpt => $args) {
-			if( ! in_array($cpt, $all_cpts) )
-				register_post_type( $cpt, $args );
-		}
+	if( !is_array($custom_types) || sizeof($custom_types) < 1)
+		return false;
+
+	$regstred_types = get_post_types(array(), 'objects');
+	$regstred_types = (array)$regstred_types;
+	
+	$edit_types = array();
+	foreach ($custom_types as $key => $value) {
+		if(isset($regstred_types[ $key ]))
+			$edit_types[$key] = (array)$regstred_types[ $key ]; // post, page, product ..
 	}
+
+	return $edit_types;
 }
-add_action( 'init', 'dt_register_custom_types' );
+
+function dt_custom_post_types() {
+	$custom_types = get_option(DT_CPT_OPTION, array() );
+	if( !is_array($custom_types) || sizeof($custom_types) < 1)
+		return false;
+
+	$edit_types = get_editable_types();
+	$register_types = array_diff_key($custom_types, $edit_types);
+
+	/**
+	 * Register Types
+	 */
+	apply_filters( 'dt_register_custom_post_types', $register_types );
+	foreach ($register_types as $cpt => $args) {
+		register_post_type( $cpt, $args );
+	}
+
+	/**
+	 * Edit Registred Types
+	 */
+	// apply_filters( 'dt_edit_custom_post_types', $edit_types );
+	// foreach ($edit_types as $key => $value) {
+	// 	# code...
+	// }
+
+	$p_object = get_post_type_object( 'page' );
+
+	if ( ! $p_object )
+		return FALSE;
+
+    // see get_post_type_labels()
+	$p_object->labels->name               = 'Locations';
+	$p_object->labels->singular_name      = 'Location';
+	$p_object->labels->add_new            = 'Add location';
+	$p_object->labels->add_new_item       = 'Add new location';
+	$p_object->labels->all_items          = 'All locations';
+	$p_object->labels->edit_item          = 'Edit location';
+	$p_object->labels->name_admin_bar     = 'Location';
+	$p_object->labels->menu_name          = 'Location';
+	$p_object->labels->new_item           = 'New location';
+	$p_object->labels->not_found          = 'No locations found';
+	$p_object->labels->not_found_in_trash = 'No locations found in trash';
+	$p_object->labels->search_items       = 'Search locations';
+	$p_object->labels->view_item          = 'View location';
+
+	return TRUE;	
+	
+}
+add_action( 'wp_loaded', 'dt_custom_post_types', 99 );

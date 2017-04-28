@@ -26,13 +26,15 @@ Author URI: https://vk.com/nikolays_93
 
 namespace DTSettings;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
+	exit; // Exit if accessed directly
 
 define('DTS_DIR', __DIR__);
 define('DT_GLOBAL_PAGESLUG', 'project-settings');
 define('DT_CPT_OPTION', 'project-types');
-define('DT_CCPT_PAGESLUG', 'create_cpt');
-define('DT_ECPT_PAGESLUG', 'edit_cpt');
+// define('DT_CCPT_PAGESLUG', 'create_cpt');
+// define('DT_ECPT_PAGESLUG', 'edit_cpt');
+// delete_option( DT_CPT_OPTION );
 
 if(!function_exists('is_wp_debug')){
   function is_wp_debug(){
@@ -66,7 +68,7 @@ function project_settings_activation(){
 
 function check_do_actions( $opts = false ){
 	$page = isset($_GET['page']) ? $_GET['page'] : '';
-	if( empty($_COOKIE['developer']) && !in_array($page, array(DT_GLOBAL_PAGESLUG, DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG)) )
+	if( empty($_COOKIE['developer']) && $page != DT_GLOBAL_PAGESLUG )
 		add_action( 'admin_menu', 'dt_hide_menus_init', 9999 );
 
 	if( !$opts )
@@ -106,7 +108,7 @@ function get_admin_assets(){
 	wp_localize_script( 'project-settings', 'menu_disabled', array(
 		'menu' => _isset_empty($opts['menu']),
 		'sub_menu' => _isset_empty($opts['sub_menu']),
-		'edit_cpt_page' => DT_ECPT_PAGESLUG
+		'edit_cpt_page' => DT_GLOBAL_PAGESLUG
 		) );
 	wp_enqueue_script(  'data-actions', plugins_url(basename(__DIR__) . '/assets/jquery.data-actions.js'), array('jquery'), '1.1', true );
 
@@ -114,10 +116,8 @@ function get_admin_assets(){
 	wp_localize_script( 'project-settings', 'post_types', array_values( get_post_types() ) );
 }
 
-if( isset($_GET['page']) ){
-	if(in_array( $_GET['page'], array(DT_GLOBAL_PAGESLUG, DT_CCPT_PAGESLUG, DT_ECPT_PAGESLUG) ))
-		add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
-}
+if( isset($_GET['page']) && $_GET['page'] == DT_GLOBAL_PAGESLUG )
+	add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
 
 //register_post_type('post_type_name', array(
 // 		'label'  => null,

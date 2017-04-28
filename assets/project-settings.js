@@ -11,7 +11,7 @@ pcjq(function( $ ) {
           result += $(this).parent().children('a').attr('href') + ',';
         }
       });
-      $('textarea#menu').val(result);
+      $('input#menu').val(result);
 
       var result = '';
       $('#adminmenu>li>ul span.after').each(function(){
@@ -22,18 +22,16 @@ pcjq(function( $ ) {
           result += parent + '>' + obj +',';
         }
       });
-      $('textarea#sub_menu').val(result);
+      $('input#sub_menu').val(result);
     }
 
     // Добавить шестерни
     $('#adminmenu > li > a').each(function(){
       var elem = $(this).attr('href').split('?');
       if(elem[0] == 'edit.php'){
-        if( ! elem[1] )
-          elem[1] = 'post_type=post'
+        elem[1] = elem[1] ? elem[1].replace('_', '-') : 'post-type=post';
 
-        link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&edit_' + elem[1];
-
+        link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + elem[1];
         $(this).parent('li').append( 
           $("<a></a>").attr('href', link).attr('class', 'after dashicons dashicons-admin-generic') );
       }
@@ -84,12 +82,27 @@ pcjq(function( $ ) {
         $(this).select();
       }
     });
+
     // change referer
-    
-    
     $('form#options').on('submit', function(e){
       var val = $('[name="_wp_http_referer"]').val() + '&post-type=';
       $('[name="_wp_http_referer"]').val( val + $('input#post_type_name').val() );
-    }); 
+    });
+
+    var singleSelector = 'input#labels_singular_name';
+    var pluralSelector = 'input#label';
+    $( singleSelector + ', ' + pluralSelector).on('keyup change focus', function(event) {
+      var single = $(singleSelector).val();
+      var plural = $(pluralSelector).val();
+
+      $("input[data-pattern]").each(function(index, el) {
+        if( ! $(this).val() )
+          $(this).attr('data-fill-pattern', 1);
+
+        if($(this).attr('data-fill-pattern'))
+          $(this).val( $(this).attr('data-pattern').replace("[single]", single).replace("[plural]", plural) );
+      });
+    });
+
   });
 });
