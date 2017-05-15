@@ -39,7 +39,7 @@ define('DT_CPT_OPTION', 'project-types');
 if(!function_exists('is_wp_debug')){
   function is_wp_debug(){
     if( WP_DEBUG ){
-      if( defined(WP_DEBUG_DISPLAY) && ! WP_DEBUG_DISPLAY){
+      if( defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY !== false ){
         return false;
       }
       return true;
@@ -52,7 +52,7 @@ require_once(DTS_DIR . '/inc/actions.php');
 
 if( is_admin() ){
 	require_once(DTS_DIR . '/inc/WPAdminPageRender/class-wp-admin-page-render.php');
-	require_once(DTS_DIR . '/inc/WPForm-render/class-wp-form-render.php');
+	require_once(DTS_DIR . '/inc/WPFormRender/class-wp-form-render.php');
 
 	require_once(DTS_DIR . '/inc/admin-page.php');
 }

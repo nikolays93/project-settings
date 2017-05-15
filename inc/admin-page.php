@@ -65,17 +65,15 @@ function get_cpt_or_pt(){
 	return $active;
 }
 
-/**
- * Page Renders
- */
 $page = new WPAdminPageRender( DT_GLOBAL_PAGESLUG,
-	array(
-		'parent' => 'options-general.php',
-		'title' => __('Настройки проекта'),
-		'menu' => __('Настройки проекта'),
-		),
-	'DTSettings\settings_page', DT_CPT_OPTION, 'DTSettings\valid' );
+		array(
+			'parent' => 'options-general.php',
+			'title' => __('Настройки проекта'),
+			'menu' => __('Настройки проекта'),
+			),
+		'DTSettings\settings_page', DT_CPT_OPTION, 'DTSettings\valid' );
 
+// Main Page Render
 function settings_page(){
 	/**
 	 * Redirect If Type Not Exists 
@@ -93,55 +91,58 @@ function settings_page(){
 		get_cpt_or_pt(),
 		true
 		);
+
+	// var_dump(get_current_screen());
 }
 
-if( !isset( $_GET['post-type'] ) || !array_key_exists($_GET['post-type'], get_editable_types()) ){
-	$page->add_metabox( 'project-types-main', 'Настройки', function(){
-		WPForm::render(
-			apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-main.php'), DT_CPT_OPTION ),
-			get_cpt_or_pt(),
-			true,
-			array('item_wrap' => false)
-			);
-	});
 
-	$page->add_metabox( 'project-types-supports', 'Возможности типа записи', function(){
-		WPForm::render(
-			apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
-			get_cpt_or_pt(),
-			true,
-			array('clear_value' => false)
-			);
-	});
-}
+// if( !isset( $_GET['post-type'] ) || ( !empty( $_GET['post-type'] ) && !array_key_exists($_GET['post-type'], get_editable_types()) ) ){
+	// $page->add_metabox( 'project-types-main', 'Настройки', function(){
+	// 	WPForm::render(
+	// 		apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-main.php'), DT_CPT_OPTION ),
+	// 		get_cpt_or_pt(),
+	// 		true,
+	// 		array('item_wrap' => false)
+	// 		);
+	// });
 
-$page->add_metabox( 'project-types-labels', 'Надписи', function(){
-	WPForm::render(
-    	apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-labels.php'), DT_CPT_OPTION ),
-    	get_cpt_or_pt(),
-    	true
-    	);
-});
+	// $page->add_metabox( 'project-types-supports', 'Возможности типа записи', function(){
+	// 	WPForm::render(
+	// 		apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-supports.php'), DT_CPT_OPTION ),
+	// 		get_cpt_or_pt(),
+	// 		true,
+	// 		array('clear_value' => false)
+	// 		);
+	// });
+// }
+
+// $page->add_metabox( 'project-types-labels', 'Надписи', function(){
+// 	WPForm::render(
+//     	apply_filters( 'DTSettings\dt_admin_options', include('settings/cpt-labels.php'), DT_CPT_OPTION ),
+//     	get_cpt_or_pt(),
+//     	true
+//     	);
+// });
 
 /**
  * General Project Settings
  */
-$page->add_metabox( 'project-settings', 'Настройки', function(){
-	WPForm::render(
-    	apply_filters( 'DTSettings\dt_admin_options', include('settings/global.php'), DT_CPT_OPTION ),
-    	WPForm::active( DT_GLOBAL_PAGESLUG, false, true ),
-    	true,
-    	array('hide_desc' => true)
-    	);
-}, 'side');
+// $page->add_metabox( 'project-settings', 'Настройки', function(){
+// 	WPForm::render(
+//     	apply_filters( 'DTSettings\dt_admin_options', include('settings/global.php'), DT_CPT_OPTION ),
+//     	WPForm::active( DT_GLOBAL_PAGESLUG, false, true ),
+//     	true,
+//     	array('hide_desc' => true)
+//     	);
+// }, 'side');
 
-add_action( DT_GLOBAL_PAGESLUG . '_inside_side_container', function(){
-	$add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
+// add_action( DT_GLOBAL_PAGESLUG . '_inside_side_container', function(){
+// 	$add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
 
-	echo '<p><input type="button" id="setNotHide" class="button'.$add_class.'" value="Показать скрытые меню (для браузера)"></p>';
-}, 5);
+// 	echo '<p><input type="button" id="setNotHide" class="button'.$add_class.'" value="Показать скрытые меню (для браузера)"></p>';
+// }, 5);
 
-$page->set_metaboxes();
+// $page->set_metaboxes();
 
 /**
  * Validate Input's Values
