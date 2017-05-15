@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI:
 Description: Скрывает не раскрытый функионал WordPress.
-Version: 2.2a
+Version: 2.0b
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */

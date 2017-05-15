@@ -88,7 +88,6 @@ function dt_hide_menus_init(){
 }
 function get_editable_types(){
 	$custom_types = get_option(DT_CPT_OPTION, array() );
-
 	if( !is_array($custom_types) || sizeof($custom_types) < 1)
 		return false;
 
@@ -104,51 +103,30 @@ function get_editable_types(){
 	return $edit_types;
 }
 
+add_action( 'wp_loaded', 'dt_custom_post_types', 99 );
 function dt_custom_post_types() {
 	$custom_types = get_option(DT_CPT_OPTION, array() );
 	if( !is_array($custom_types) || sizeof($custom_types) < 1)
 		return false;
 
-	$edit_types = get_editable_types();
-	$register_types = array_diff_key($custom_types, $edit_types);
+	$register_types = array_diff_key($custom_types, get_editable_types());
+	$change_types   = array_diff_key($custom_types, $register_types);
 
 	/**
 	 * Register Types
 	 */
-	apply_filters( 'dt_register_custom_post_types', $register_types );
-	foreach ($register_types as $cpt => $args) {
+	foreach (apply_filters( 'dt_register_custom_post_types', $register_types ) as $cpt => $args) {
 		register_post_type( $cpt, $args );
 	}
 
 	/**
 	 * Edit Registred Types
 	 */
-	// apply_filters( 'dt_edit_custom_post_types', $edit_types );
-	// foreach ($edit_types as $key => $value) {
-	// 	# code...
-	// }
+	foreach (apply_filters( 'dt_edit_custom_post_types', $change_types ) as $key => $value) {
+		$p_object = get_post_type_object( $key );
+		if ( ! $p_object )
+			break;
 
-	$p_object = get_post_type_object( 'page' );
-
-	if ( ! $p_object )
-		return FALSE;
-
-    // see get_post_type_labels()
-	$p_object->labels->name               = 'Locations';
-	$p_object->labels->singular_name      = 'Location';
-	$p_object->labels->add_new            = 'Add location';
-	$p_object->labels->add_new_item       = 'Add new location';
-	$p_object->labels->all_items          = 'All locations';
-	$p_object->labels->edit_item          = 'Edit location';
-	$p_object->labels->name_admin_bar     = 'Location';
-	$p_object->labels->menu_name          = 'Location';
-	$p_object->labels->new_item           = 'New location';
-	$p_object->labels->not_found          = 'No locations found';
-	$p_object->labels->not_found_in_trash = 'No locations found in trash';
-	$p_object->labels->search_items       = 'Search locations';
-	$p_object->labels->view_item          = 'View location';
-
-	return TRUE;	
-	
+		$p_object->labels = (object) array_merge((array) $p_object->labels, (array) $value['labels']);
+	}
 }
-add_action( 'wp_loaded', 'dt_custom_post_types', 99 );
