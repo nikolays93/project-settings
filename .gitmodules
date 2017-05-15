@@ -1,0 +1,6 @@
+[submodule "inc/WPAdminPageRender"]
+	path = inc/WPAdminPageRender
+	url = https://github.com/nikolays93/WPAdminPageRender.git
+[submodule "inc/WPFormRender"]
+	path = inc/WPFormRender
+	url = https://github.com/nikolays93/WPFormRender.git
