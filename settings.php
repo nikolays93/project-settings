@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Настройки проекта
-Plugin URI:
-Description: Скрывает не раскрытый функионал WordPress.
-Version: 2.0b
+Plugin URI: https://github.com/nikolays93/project-settings
+Description: Скрывает нераскрытый функционал WordPress. Предоставляет возможность создавать новые типы записей и редактировать заголовки ранее зарегистрированных.
+Version: 2.1b
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -32,9 +32,6 @@ if ( ! defined( 'ABSPATH' ) )
 define('DTS_DIR', __DIR__);
 define('DT_GLOBAL_PAGESLUG', 'project-settings');
 define('DT_CPT_OPTION', 'project-types');
-// define('DT_CCPT_PAGESLUG', 'create_cpt');
-// define('DT_ECPT_PAGESLUG', 'edit_cpt');
-// delete_option( DT_CPT_OPTION );
 
 if(!function_exists('is_wp_debug')){
   function is_wp_debug(){
@@ -52,8 +49,12 @@ require_once(DTS_DIR . '/inc/actions.php');
 
 if( is_admin() ){
 	require_once(DTS_DIR . '/inc/WPAdminPageRender/class-wp-admin-page-render.php');
-	require_once(DTS_DIR . '/inc/WPFormRender/class-wp-form-render.php');
-
+	
+	if( isset($_GET['page']) && $_GET['page'] === DT_GLOBAL_PAGESLUG ){
+		require_once(DTS_DIR . '/inc/WPFormRender/class-wp-form-render.php');
+		require_once(DTS_DIR . '/inc/class-post-types-list-table.php');
+		add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
+	}
 	require_once(DTS_DIR . '/inc/admin-page.php');
 }
 
@@ -110,35 +111,9 @@ function get_admin_assets(){
 		'sub_menu' => _isset_empty($opts['sub_menu']),
 		'edit_cpt_page' => DT_GLOBAL_PAGESLUG
 		) );
-	wp_enqueue_script(  'data-actions', plugins_url(basename(__DIR__) . '/assets/jquery.data-actions.js'), array('jquery'), '1.1', true );
-
 
 	wp_localize_script( 'project-settings', 'post_types', array_values( get_post_types() ) );
 }
 
 if( isset($_GET['page']) && $_GET['page'] == DT_GLOBAL_PAGESLUG )
 	add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
-
-//register_post_type('post_type_name', array(
-// 		'label'  => null,
-// 		'description'         => '',
-// 		'public'              => false,
-// 		'publicly_queryable'  => null,
-// 		'exclude_from_search' => null,
-// 		'show_ui'             => null,
-// 		'show_in_menu'        => null, // показывать ли в меню адмнки
-// 		'show_in_admin_bar'   => null, // по умолчанию значение show_in_menu
-// 		'show_in_nav_menus'   => null,
-// 		'show_in_rest'        => null, // добавить в REST API. C WP 4.7
-// 		'rest_base'           => null, // $post_type. C WP 4.7
-// 		'menu_position'       => null,
-// 		'menu_icon'           => null, 
-// 		//'capability_type'   => 'post',
-// 		//'capabilities'      => 'post', // массив дополнительных прав для этого типа записи
-// 		//'map_meta_cap'      => null, // Ставим true чтобы включить дефолтный обработчик специальных прав
-// 		'hierarchical'        => false,
-// 		'taxonomies'          => array(),
-// 		'has_archive'         => false,
-// 		'rewrite'             => true,
-// 		'query_var'           => true,
-// 	) );

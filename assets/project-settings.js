@@ -85,8 +85,9 @@ pcjq(function( $ ) {
 
     // change referer
     $('form#options').on('submit', function(e){
-      var val = $('[name="_wp_http_referer"]').val() + '&post-type=';
-      $('[name="_wp_http_referer"]').val( val + $('input#post_type_name').val() );
+      var referer = $('[name="_wp_http_referer"]').val();
+      var type = ($('input#post_type_name').val()) ? '&post-type=' + $('input#post_type_name').val() : '';
+      $('[name="_wp_http_referer"]').val( referer + type );
     });
 
     var singleSelector = 'input#labels_singular_name';

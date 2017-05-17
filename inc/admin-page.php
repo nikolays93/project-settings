@@ -7,34 +7,53 @@ namespace DTSettings;
 add_filter( DT_GLOBAL_PAGESLUG . '_columns', function(){return 2;} );
 add_action( DT_GLOBAL_PAGESLUG . '_inside_side_container', 'submit_button', 20 );
 
-if( ! _isset_false($_GET['post-type']) ){
-	add_filter( 'DTSettings\dt_admin_options', function($inputs, $option){
-		$defaults = array(
-			'public' => 'on',
-			'publicly_queryable' => 'on',
-			'show_ui' => 'on',
-			'show_in_menu' => 'on',
-			'has_archive' => 'on',
-			'hierarchical' => 'on',
-			'supports][title' => 'on',
-			'supports][editor' => 'on',
-			'supports][thumbnail' => 'on',
-			'supports][excerpt' => 'on',
-			'supports][custom-fields' => 'on',
-			'supports][page-attributes' => 'on',
-			);
 
-		foreach ($inputs as &$input) {
-			if( array_key_exists($input['id'], $defaults) )
-				$input['value'] = $defaults[ $input['id'] ];
-		}
+$page_callback = 'settings_page';
+if( !empty($_GET['do']) ){
+	switch ($_GET['do']) {
+		case 'remove':
+			add_action('plugins_loaded', function(){
+				if( wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$_GET['cpt'] ) ){
+					$cpts = get_option( DT_CPT_OPTION );
+					unset($cpts[$_GET['cpt']]);
+					update_option( DT_CPT_OPTION, $cpts );
 
-		return $inputs;
-	}, 12, 2 );
+					wp_redirect( get_admin_url() . 'options-general.php?page=' . DT_GLOBAL_PAGESLUG );
+					exit;
+					
+				}
+			});
+			break;
+		case 'create_type':
+			add_filter( 'DTSettings\dt_admin_options', function($inputs, $option){
+				$defaults = array(
+					'public' => 'on',
+					'publicly_queryable' => 'on',
+					'show_ui' => 'on',
+					'show_in_menu' => 'on',
+					'has_archive' => 'on',
+					'hierarchical' => 'on',
+					'supports][title' => 'on',
+					'supports][editor' => 'on',
+					'supports][thumbnail' => 'on',
+					'supports][excerpt' => 'on',
+					'supports][custom-fields' => 'on',
+					'supports][page-attributes' => 'on',
+					);
 
-	add_action(DT_GLOBAL_PAGESLUG . '_inside_page_content', function(){
-		echo "Заполните данные ниже чтобы создать новый тип записи или нажмите на 'шестеренку настроек' типа записи в меню слева.";
-	}, 5);
+				foreach ($inputs as &$input) {
+					if( array_key_exists($input['id'], $defaults) )
+						$input['value'] = $defaults[ $input['id'] ];
+				}
+
+				return $inputs;
+			}, 12, 2 );
+			break;
+	}
+}
+else {
+	if(!isset($_GET['post-type']))
+		$page_callback = 'first_page';
 }
 
 function get_cpt_or_pt(){
@@ -71,8 +90,27 @@ $page = new WPAdminPageRender( DT_GLOBAL_PAGESLUG,
 		'title' => __('Настройки проекта'),
 		'menu' => __('Настройки проекта'),
 		),
-	'DTSettings\settings_page', DT_CPT_OPTION, 'DTSettings\valid' );
+	'DTSettings\\'.$page_callback, DT_CPT_OPTION, 'DTSettings\valid' );
 
+function first_page(){
+	echo sprintf('<a href="?page=%s&do=%s" class="button button-primary alignright">Создать новый тип записей</a>',
+		$_REQUEST['page'],
+		'create_type');
+
+	$cpts = get_option( DT_CPT_OPTION );
+	if(sizeof($cpts) >= 1){
+		$table = new \Post_Types_List_Table();
+		foreach ($cpts as $id => $type) {
+			$table->set_type( $id, $type['labels']['singular_name'], $type['label'] );
+		}
+		
+		$table->prepare_items();
+		$table->display();
+	}
+	else {
+		echo "<p>Здесь вы можете создать новый тип записи или изменить вид уже зарегистрированного типа <br> и\или скрыть не реализованный функционал CMS WordPress из меню.</p>";
+	}
+}
 // Main Page Render
 function settings_page(){
 	/**
@@ -93,18 +131,21 @@ function settings_page(){
 		);
 }
 
-if( !isset($_GET['page']) || $_GET['page'] !== DT_GLOBAL_PAGESLUG )
+if( ! isset($_GET['page']) || $_GET['page'] !== DT_GLOBAL_PAGESLUG )
 	return;
 
 /**
  * Edit this only for custom post types
  */
-if( empty($_GET['post-type']) || !array_key_exists($_GET['post-type'], get_editable_types()) ){
-	$page->add_metabox( 'project-types-main', 'Настройки', 'DTSettings\project_types_main');
-	$page->add_metabox( 'project-types-supports', 'Возможности типа записи', 'DTSettings\project_types_supports');
+if(!empty($_GET['do']) && $_GET['do'] == 'create_type' || !empty($_GET['post-type']) ){
+	if( empty($_GET['post-type']) || !array_key_exists($_GET['post-type'], get_editable_types()) ){
+		$page->add_metabox( 'project-types-main', 'Настройки', 'DTSettings\project_types_main');
+		$page->add_metabox( 'project-types-supports', 'Возможности типа записи', 'DTSettings\project_types_supports');
+	}
+
+	$page->add_metabox( 'project-types-labels', 'Надписи', 'DTSettings\project_types_labels');
 }
 
-$page->add_metabox( 'project-types-labels', 'Надписи', 'DTSettings\project_types_labels');
 $page->add_metabox( 'project-settings', 'Настройки', 'DTSettings\dt_project_settings', 'side');
 
 function project_types_main(){
@@ -135,6 +176,10 @@ function project_types_labels(){
  * General Project Settings
  */
 function dt_project_settings(){
+	$add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
+
+	echo '<p><input type="button" id="setNotHide" class="button'.$add_class.'" value="Показывать мне скрытые меню"></p>';
+
 	WPForm::render(
     	apply_filters( 'DTSettings\dt_admin_options', include('settings/global.php'), DT_CPT_OPTION ),
     	WPForm::active( DT_GLOBAL_PAGESLUG, false, true ),
@@ -142,13 +187,6 @@ function dt_project_settings(){
     	array('hide_desc' => true)
     	);
 }
-
-// add cookie button
-add_action( DT_GLOBAL_PAGESLUG . '_inside_side_container', function(){
-	$add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
-
-	echo '<p><input type="button" id="setNotHide" class="button'.$add_class.'" value="Показать скрытые меню (для браузера)"></p>';
-}, 5);
 
 $page->set_metaboxes();
 
@@ -171,7 +209,7 @@ function valid( $values ){
 	
 	// # Post Type
 	$all_cpts = get_option(DT_CPT_OPTION, array() );
-	if( ! $values['post_type_name'] )
+	if( !isset($values['post_type_name']) || ! $values['post_type_name'] )
 		return $all_cpts;
 
 	if( !is_array($all_cpts) )
