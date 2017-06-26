@@ -48,10 +48,10 @@ if(!function_exists('is_wp_debug')){
 require_once(DTS_DIR . '/inc/actions.php');
 
 if( is_admin() ){
-    require_once(DTS_DIR . '/inc/WPAdminPageRender/class-wp-admin-page-render.php');
+    require_once(DTS_DIR . '/inc/class-wp-admin-page-render.php');
 
     if( isset($_GET['page']) && $_GET['page'] === DT_GLOBAL_PAGESLUG ){
-        require_once(DTS_DIR . '/inc/WPFormRender/class-wp-form-render.php');
+        require_once(DTS_DIR . '/inc/class-wp-form-render.php');
         require_once(DTS_DIR . '/inc/class-post-types-list-table.php');
         add_action( 'admin_enqueue_scripts', 'DTSettings\get_admin_assets' );
     }
@@ -62,7 +62,7 @@ register_activation_hook( __FILE__, 'DTSettings\project_settings_activation' );
 function project_settings_activation(){
     $opt = get_option( DT_GLOBAL_PAGESLUG );
     if( $opt === false || sizeof($opt) < 1)
-        DTSettings\set_defaults();
+        set_defaults();
 
     add_option( DT_CPT_OPTION, array() );
 }
