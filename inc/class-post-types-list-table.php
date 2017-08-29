@@ -1,13 +1,16 @@
 <?php
+
+namespace PSettings;
+
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly
-    
-if( ! class_exists( 'WP_List_Table' ) ) {
+
+if( ! class_exists( '\WP_List_Table' ) ) {
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-class Post_Types_List_Table extends WP_List_Table {
+class Post_Types_List_Table extends \WP_List_Table {
     private $types = array();
-    
+
     public function set_type( $title = false, $single = false, $plural = false ){
         if( !$title || !$single || !$plural )
             return;
@@ -50,7 +53,7 @@ class Post_Types_List_Table extends WP_List_Table {
             'edit' => '<a href="?page=project-settings&post-type='.$item['title'].'">'.__('Edit').'</a>',
             'delete' => '<a href="'.$remove_url.'">'.__('Delete').'</a>',
         );
-        
+
         return $name . $this->row_actions($actions);
     }
     function column_cb($item){
@@ -87,7 +90,7 @@ class Post_Types_List_Table extends WP_List_Table {
     //         }
     //         update_option( DT_CPT_OPTION, $all_cpts );
     //         wp_redirect( $_POST['_wp_http_referer'] );
-    //         exit(); 
+    //         exit();
     //     }
     // }
     /**
