@@ -1,38 +1,46 @@
 <?php
 $cpt = array(
 	array(
-		"id" => 'supports][title',
-		'type' => 'checkbox',
+		'id'    => 'supports][title',
+		"name"  => 'supports][',
+		'type'  => 'checkbox',
 		'label' => 'Post Title',
-		'desc' => ''
+		'value' => 'title',
 		),
 	array(
-		"id" => 'supports][editor',
-		'type' => 'checkbox',
+		'id' => 'supports][editor',
+		"name"    => 'supports][',
+		'type'  => 'checkbox',
 		'label' => 'Content Editor',
-		'desc' => ''
+		'value' => 'editor',
 		),
 	array(
-		"id" => 'supports][thumbnail',
-		'type' => 'checkbox',
+		'id' => 'supports][thumbnail',
+		"name"    => 'supports][',
+		'type'  => 'checkbox',
 		'label' => 'Post Thumbnail',
-		'desc' => ''
+		'value' => 'thumbnail',
 		),
 	array(
-		"id" => 'supports][excerpt',
-		'type' => 'checkbox',
+		'id' => 'supports][excerpt',
+		"name"    => 'supports][',
+		'type'  => 'checkbox',
 		'label' => 'Post Excerpt',
-		'desc' => ''
+		'value' => 'excerpt',
 		),
-	array("id" => 'supports][custom-fields',
-		'type' => 'checkbox',
+	array(
+		'id' => 'supports][custom-fields',
+		"name"    => 'supports][',
+		'type'  => 'checkbox',
 		'label' => 'Custom Fields',
-		'desc' => ''
+		'value' => 'custom-fields',
 		),
-	array("id" => 'supports][page-attributes',
-		'type' => 'checkbox',
+	array(
+		'id' => 'supports][page-attributes',
+		"name"    => 'supports][',
+		'type'  => 'checkbox',
 		'label' => 'Page Attributes',
-		'desc' => ''
+		'value' => 'page-attributes',
 		),
 	);
 
