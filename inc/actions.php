@@ -176,7 +176,7 @@ function custom_post_types() {
 /**
  * Отчистить мета теги
  */
-add_action( 'init', __NAMESPACE__ . 'template_head_cleanup' );
+add_action( 'init', __NAMESPACE__ . '\template_head_cleanup' );
 function template_head_cleanup() {
   remove_action( 'wp_head', 'feed_links_extra', 3 );                    // Category Feeds
   remove_action( 'wp_head', 'feed_links', 2 );                          // Post and Comment Feeds
