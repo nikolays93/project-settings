@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI: https://github.com/nikolays93/project-settings
 Description: Скрывает нераскрытый функционал WordPress. Предоставляет возможность создавать новые типы записей и редактировать заголовки ранее зарегистрированных.
-Version: 3.0a
+Version: 3.1b
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 Author EMAIL: nikolayS93@ya.ru
@@ -91,9 +91,6 @@ class DTSettings {
     add_action( self::SETTINGS . '_inside_side_container', 'submit_button', 20 );
     add_filter('post_type_data_render', array($this, 'read_only_inputs_filter'), 10, 2);
     add_filter('post_type_data_render', array($this, 'create_new_post_type_filter'), 10, 2);
-
-    add_action( 'load-post.php',     array($this, 'init_metaboxes') );
-    add_action( 'load-post-new.php', array($this, 'init_metaboxes') );
 
     $this->init_admin_page();
   }
@@ -184,7 +181,6 @@ class DTSettings {
       'labels'   => array( 'labels', __('Labels'), array($this, 'metabox_labels'), 'normal' ),
       'main'     => array( 'main', __('Settings'), array($this, 'metabox_main'), 'normal' ),
       'supports' => array( 'supports', __('Supports'), array($this, 'metabox_supports'), 'normal' ),
-      'fields'   => array( 'fields', __('Defined Fields'), array($this, 'metabox_defined_fields'), 'normal' ),
       );
 
     if( $action == 'remove' ){
@@ -201,7 +197,6 @@ class DTSettings {
       $metaboxes_active[] = $metaboxes['labels'];
       $metaboxes_active[] = $metaboxes['main'];
       $metaboxes_active[] = $metaboxes['supports'];
-      $metaboxes_active[] = $metaboxes['fields'];
     }
     elseif( $post_type ){
       // edit exists
@@ -276,10 +271,6 @@ class DTSettings {
       );
   }
 
-  function metabox_defined_fields(){
-    include DTS_DIR . '/templates/defined_fields.php';
-  }
-
   /**
    * Side Meta Box
    */
@@ -293,37 +284,6 @@ class DTSettings {
       WPForm::active( self::SETTINGS, false, true ),
       true,
       array('clear_value' => false, 'hide_desc' => true, 'admin_page' => self::SETTINGS)
-      );
-  }
-  /*********************************** Defined Fields  **********************************/
-  function init_metaboxes(){
-    if( sizeof(self::$post_types) < 1 )
-      return false;
-
-    if( !isset(self::$settings['fields']) || !is_array(self::$settings['fields'])
-      || sizeof(self::$settings['fields']) < 1 )
-      return false;
-
-    $boxes = new WPPostBoxes();
-    $boxes->add_box('Объявленные произвольные поля', array($this, 'metabox_render'), false, 'high' );
-    $fields = array();
-    foreach (self::$settings['fields'] as $field) {
-      $fields[] = $field['id'];
-    }
-    $boxes->add_fields( $fields );
-  }
-  function metabox_render(){
-    global $post;
-
-    // var_dump(get_post_meta($post->ID));
-    $active = array();
-    foreach (self::$settings['fields'] as $field) {
-      $active[] = get_post_meta( $post->ID, $field['id'], true );
-    }
-    WPForm::render(
-      self::$settings['fields'],
-      null,
-      true
       );
   }
 
@@ -373,6 +333,6 @@ class DTSettings {
 }
 
 add_action( 'plugins_loaded', function(){ $p = DTSettings::get_instance(); }, 1100 );
-register_activation_hook( __FILE__, array( 'DTSettings', 'activate' ) );
+register_activation_hook( __FILE__, array( __NAMESPACE__ . '\DTSettings', 'activate' ) );
 // register_deactivation_hook( __FILE__, array( 'DTSettings', 'deactivate' ) );
-register_uninstall_hook( __FILE__, array( 'DTSettings', 'uninstall' ) );
+register_uninstall_hook( __FILE__, array( __NAMESPACE__ . '\DTSettings', 'uninstall' ) );
