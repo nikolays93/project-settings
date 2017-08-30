@@ -1,8 +1,28 @@
 <?php
+
+namespace PSettings;
+
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly
 
-function dt_disable_updater(){
+$page = isset($_GET['page']) ? $_GET['page'] : '';
+if( empty($_COOKIE['developer']) && $page != DTSettings::SETTINGS )
+  add_action( 'admin_menu', 'PSettings\hide_menus_init', 9999 );
+
+if(! isset(DTSettings::$settings['globals']['check_updates']) )
+  disable_updater();
+
+if(! isset(DTSettings::$settings['globals']['clear_dash']) )
+  add_action('wp_dashboard_setup', 'PSettings\clear_dash' );
+
+if(! isset(DTSettings::$settings['globals']['clear_toolbar']) ){
+  add_action('admin_bar_menu', 'PSettings\clear_toolbar', 666);
+  add_action('admin_head', 'PSettings\clear_yoast_from_toolbar');
+}
+
+add_action( 'wp_loaded', 'PSettings\custom_post_types', 99 );
+
+function disable_updater(){
     add_action( 'init', create_function( '$a', "remove_action( 'init', 'wp_version_check' );" ), 2 );
     add_filter( 'pre_option_update_core', create_function( '$a', "return null;" ) );
     remove_action( 'wp_version_check', 'wp_version_check' );
@@ -29,7 +49,7 @@ function dt_disable_updater(){
     add_filter( 'pre_site_transient_update_themes', create_function( '$a', "return null;" ) );
     wp_clear_scheduled_hook( 'wp_update_themes' );
 }
-function dt_clear_dash(){
+function clear_dash(){
     $side = &$GLOBALS['wp_meta_boxes']['dashboard']['side']['core'];
     $normal = &$GLOBALS['wp_meta_boxes']['dashboard']['normal']['core'];
 
@@ -42,22 +62,23 @@ function dt_clear_dash(){
     unset($normal['dashboard_recent_comments']); //Последние комментарии
     unset($normal['dashboard_plugins']); //Последние Плагины
 }
-function dt_clear_toolbar($wp_admin_bar){
+function clear_toolbar($wp_admin_bar){
     $wp_admin_bar->remove_node( 'appearance' );
     $wp_admin_bar->remove_node( 'comments' );
     $wp_admin_bar->remove_node( 'updates' );
     $wp_admin_bar->remove_node( 'wpseo-menu' ); // hide yost seo
 }
-function dt_clear_yoast_from_toolbar(){
+function clear_yoast_from_toolbar(){
 
     echo '<style rel="stylesheet" type="text/css" media="all">.yoast-seo-score.content-score,.yoast-seo-score.keyword-score,#wpseo-filter{display:none;}</style>';
 }
-function dt_hide_menus_init(){
-    $values = get_option( DT_GLOBAL_PAGESLUG, false );
+function hide_menus_init(){
+    $values = get_option( DTSettings::SETTINGS, false );
 
-    if(!isset($values['pre_menu'])){
-        if(isset($values['menu'])){
-            $menus = explode(',', $values['menu']);
+    if(!isset($values['globals']['pre_menu'])){
+        if(isset($values['globals']['menu'])){
+            $menus = explode(',', $values['globals']['menu']);
+
             foreach ($menus as $menu){
                 if(!empty($menu)){
                     $menu = str_replace("admin.php?page=", "", $menu);
@@ -69,10 +90,10 @@ function dt_hide_menus_init(){
             }
         }
     }
-    
-    if(!isset($values['pre_sub_menu'])){
-        if(isset($values['sub_menu'])){
-            $sub_menus = explode(',', $values['sub_menu']);
+
+    if(!isset($values['globals']['pre_sub_menu'])){
+        if(isset($values['globals']['sub_menu'])){
+            $sub_menus = explode(',', $values['globals']['sub_menu']);
             foreach ($sub_menus as $sub_menu) {
                 $sub_menu = str_replace("admin.php?page=", "", $sub_menu);
                 if(!empty($sub_menu)){
@@ -89,47 +110,65 @@ function dt_hide_menus_init(){
         }
     }
 }
-function get_editable_types(){
-    $custom_types = get_option(DT_CPT_OPTION, array() );
-    if( !is_array($custom_types) || sizeof($custom_types) < 1)
-        return false;
 
+function get_editable_types(){
     $regstred_types = get_post_types(array(), 'objects');
     $regstred_types = (array)$regstred_types;
-    
+
     $edit_types = array();
-    foreach ($custom_types as $key => $value) {
+    foreach (DTSettings::$post_types as $key => $value) {
         if(isset($regstred_types[ $key ]))
             $edit_types[$key] = (array)$regstred_types[ $key ]; // post, page, product ..
     }
 
     return $edit_types;
 }
-
-add_action( 'wp_loaded', 'dt_custom_post_types', 99 );
-function dt_custom_post_types() {
-    $custom_types = get_option(DT_CPT_OPTION, array() );
-    if( !is_array($custom_types) || sizeof($custom_types) < 1)
+function get_formatted_post_types(){
+    if( sizeof(DTSettings::$post_types) < 1)
         return false;
 
-    $register_types = array_diff_key($custom_types, get_editable_types());
-    $change_types   = array_diff_key($custom_types, $register_types);
+    foreach ( DTSettings::$post_types as &$post_type ):
+        foreach ($post_type as $arg => &$value) {
+            if( in_array($value, array('1', 'on', 'true')) )
+                $value = true;
 
-    /**
-     * Register Types
-     */
-    foreach (apply_filters( 'dt_register_custom_post_types', $register_types ) as $cpt => $args) {
-        register_post_type( $cpt, $args );
-    }
+            if( $value == "" ){
+                switch ($arg) {
+                    case 'menu_position':
+                        $value = 30;
+                        break;
 
-    /**
-     * Edit Registred Types
-     */
-    foreach (apply_filters( 'dt_edit_custom_post_types', $change_types ) as $key => $value) {
-        $p_object = get_post_type_object( $key );
-        if ( ! $p_object )
-            break;
+                    default:
+                        unset($post_type[$arg]);
+                        break;
+                }
+            }
+        }
+    endforeach;
 
-        $p_object->labels = (object) array_merge((array) $p_object->labels, (array) $value['labels']);
+    return DTSettings::$post_types;
+}
+function custom_post_types() {
+    if($post_types = get_formatted_post_types()){
+        $register_types = array_diff_key($post_types, get_editable_types());
+        $change_types   = array_diff_key($post_types, $register_types);
+
+        /**
+         * Register Types
+         */
+        foreach (apply_filters( 'dt_register_custom_post_types', $register_types ) as $cpt => $args) {
+            register_post_type( $cpt, $args );
+        }
+
+        /**
+         * Edit Registred Types
+         */
+        foreach (apply_filters( 'dt_edit_custom_post_types', $change_types ) as $key => $value) {
+            $p_object = get_post_type_object( $key );
+            if ( ! $p_object )
+                break;
+
+            $p_object->labels = (object) array_merge((array) $p_object->labels, (array) $value['labels']);
+        }
     }
 }
