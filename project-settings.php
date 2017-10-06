@@ -290,11 +290,12 @@ class DTSettings {
   /**
    * Validate Input's Values
    */
-  function validate( $values ){
+  function validate( $values ) {
     // Update Post Types
-    if( !empty($values['post_type_name']) ){
-      if(!empty($values['labels']))
-        $values['post_type']['labels'] = $values['labels'];
+    if( ! empty( $values['post_type_name'] ) ){
+      if( ! empty($values['labels']) ) {
+        $values['post_type']['labels'] = array_filter($values['labels']);
+      }
 
       unset($values['labels']);
 
@@ -303,7 +304,7 @@ class DTSettings {
 
       unset($values['supports']);
 
-      self::$post_types[ $values['post_type_name'] ] = $values['post_type'];
+      self::$post_types[ strtolower($values['post_type_name']) ] = $values['post_type'];
       update_option(CPTYPES, self::$post_types);
 
       unset($values['post_type']);
