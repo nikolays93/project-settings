@@ -17,30 +17,7 @@ if ( ! defined( 'ABSPATH' ) )
   exit; // disable direct access
 
 // add_filter('post_type_data_render', array($this, 'read_only_inputs_filter'), 10, 2);
-// add_filter('post_type_data_render', array($this, 'create_new_post_type_filter'), 10, 2);
 
-    /**
-     * Filter for new post type
-     */
-    // function create_new_post_type_filter($data, $type=''){
-    //     if( !isset($_GET['do']) || $_GET['do'] != 'add' )
-    //         return $data;
-
-    //     foreach ($data as $i => $input) {
-    //         if( $type == 'main' ){
-    //             if(in_array($input['id'], array('public', 'publicly_queryable', 'show_ui', 'show_in_menu')))
-    //                 $data[$i]['checked'] = 'true';
-    //         }
-    //         elseif( $type == 'supports'){
-    //             $s = array( $type.'][title', $type.'][editor', $type.'][thumbnail', $type.'][custom-fields' );
-    //             if( in_array($input['id'], $s ) ) {
-    //                 $data[$i]['checked'] = 'true';
-    //             }
-    //         }
-    //     }
-
-    //     return $data;
-    // }
 
     // function read_only_inputs_filter($data, $type=''){
     //     switch ($type) {
@@ -94,7 +71,7 @@ register_uninstall_hook( __FILE__, array( __NAMESPACE__ . '\ProjectSettings', 'u
 
 add_action( 'plugins_loaded', array(__NAMESPACE__ . '\ProjectSettings', 'get_instance'), 1100 );
 class ProjectSettings {
-    const OPTION_NAME = __CLASS__;
+    const OPTION_NAME = 'ProjectSettings';
     const OPTION_NAME_TYPES = 'project-types';
 
     public static  $post_types = array();
@@ -116,10 +93,8 @@ class ProjectSettings {
     private static function include_required_classes()
     {
         $classes = array(
-            'Example_List_Table' => 'wp-list-table.php',
             __NAMESPACE__ . '\WP_Admin_Page'      => 'wp-admin-page.php',
             __NAMESPACE__ . '\WP_Admin_Forms'     => 'wp-admin-forms.php',
-            'WP_Post_Boxes'      => 'wp-post-boxes.php',
             );
 
         foreach ($classes as $classname => $dir) {
@@ -128,12 +103,11 @@ class ProjectSettings {
             }
         }
 
-    //     require_once DTS_DIR . '/inc/actions.php';
-    // require_once DTS_DIR . '/inc/class-wp-admin-page-render.php';
-    // require_once DTS_DIR . '/inc/class-wp-form-render.php';
-    // require_once DTS_DIR . '/inc/class-post-types-list-table.php';
+        // require_once DTS_DIR . '/inc/actions.php';
+
         // includes
         // require_once PS_DIR . '/includes/register-post_type.php';
+        require_once PS_DIR . '/includes/post-types-list-table.php';
         require_once PS_DIR . '/includes/admin-page.php';
     }
 
@@ -151,13 +125,25 @@ class ProjectSettings {
         return self::$_instance;
     }
 
-    public function get( $prop_name )
+    public static function get( $prop_name )
     {
         return isset( self::$settings[ $prop_name ] ) ? self::$settings[ $prop_name ] : false;
     }
 
-    public function get_type( $type_name )
+    public static function get_type( $type_name )
     {
-        return isset( self::$post_types[ $type_name ] ) ? self::$post_types[ $type_name ] : false;
+        if( isset( self::$post_types[ $type_name ] ) ) {
+            return self::$post_types[ $type_name ];
+        }
+
+        $types = get_post_types(array('name' => $type_name), 'objetcs');
+
+        $post_type = isset($types[ $type_name ]) ? (array) $types[ $type_name ] : false;
+        if( $post_type ) {
+            $post_type['labels'] = (array)$post_type['labels'];
+            return $post_type;
+        }
+
+        return false;
     }
 }

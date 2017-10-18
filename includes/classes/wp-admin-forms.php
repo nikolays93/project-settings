@@ -25,11 +25,11 @@ class WP_Admin_Forms {
         $this->fields = $data;
         $this->args = $args;
         $this->is_table = $is_table;
-        $this->active = $this->_active();
     }
 
     public function render( $return=false )
     {
+        $this->get_active();
 
         $html = $this->args['form_wrap'][0];
         foreach ($this->fields as $field) {
@@ -41,12 +41,16 @@ class WP_Admin_Forms {
             $html .= self::_field_template( $field, $input, $this->is_table );
         }
         $html .= $this->args['form_wrap'][1];
-
         $result = $html . "\n" . implode("\n", $this->hiddens);
         if( $return )
             return $result;
 
         echo $result;
+    }
+
+    public function set_active( $active )
+    {
+        $this->active = $active;
     }
 
     public static function render_input( &$field, $active, $for_table = false )
@@ -76,7 +80,7 @@ class WP_Admin_Forms {
 
         $field = wp_parse_args( $field, $defaults );
 
-        if( ! in_array($field['type'], array('checkbox', 'select', 'radio')) && $field['default'] !== '' ) {
+        if( $field['default'] && ! in_array($field['type'], array('checkbox', 'select', 'radio')) ) {
             $field['placeholder'] = $field['default'];
         }
 
@@ -88,6 +92,10 @@ class WP_Admin_Forms {
 
     public function get_active()
     {
+        if( ! $this->active ) {
+            $this->active = $this->_active();
+        }
+
         return $this->active;
     }
 
@@ -276,22 +284,29 @@ class WP_Admin_Forms {
             case 'checkbox' :
                 $val = $field['value'] ? $field['value'] : 1;
                 $checked = checked( $entry, $val, false );
+                if( $field['default'] && ! $entry ) {
+                    $val = $field['default'];
+                    $checked = checked( true, true, false );
+                    $clear_value = '';
+                }
 
                 // if $clear_value === false dont use defaults (couse default + empty value = true)
-                if( false !== self::$clear_value )
-                    $input .= "<input type='hidden' {$name} value='{self::$clear_value}'>\n";
+                if( isset($clear_value) || false !== ($clear_value = self::$clear_value) ) {
+                    $input .= "<input type='hidden' {$name} value='{$clear_value}'>\n";
+                }
 
-                $input .= "<input type='checkbox' {$name} {$id} value='{$val}'";
+                $input .= "<input type='checkbox' {$name} {$id} {$attrs} value='{$val}'";
                 $input .= " class='input-checkbox{$class}' {$checked} />";
                 $input .= $label;
                 break;
+            case 'hidden' :
             case 'password' :
             case 'text' :
             case 'email' :
             case 'tel' :
             case 'number' :
-                $type = "type='" . esc_attr( $field['type'] ) . "'";
-                $val = esc_attr( $entry );
+                $type = sprintf('type="%s"', esc_attr( $field['type'] ));
+                $val = $field['value'] ? esc_attr( $field['value'] ) : esc_attr( $entry );
 
                 $input .= $label;
                 $input .= "<input {$type} {$name} {$id} {$ph} {$maxlength} {$autocomplete}";
@@ -444,15 +459,15 @@ class WP_Admin_Forms {
             if ( ! isset($field['id']) && ! isset($field['name']) )
                 continue;
 
-            if( $sub_name ) {
-                $option_name .= ( $option_name ) ? "[{$sub_name}]" : $sub_name;
-            }
-
             if( $option_name ) {
-                if( isset($field['name']) )
-                    $field['name'] = "{$option_name}[{$field['name']}]";
-                else
-                    $field['name'] = "{$option_name}[{$field['id']}]";
+                if( isset($field['name']) ) {
+                    $field['name'] = ($sub_name) ?
+                        "{$option_name}[{$sub_name}][{$field['name']}]" : "{$option_name}[{$field['name']}]";
+                }
+                else {
+                    $field['name'] = ($sub_name) ?
+                        "{$option_name}[{$sub_name}][{$field['id']}]" : "{$option_name}[{$field['id']}]";
+                }
 
                 if( !isset($field['check_active']) )
                     $field['check_active'] = 'id';

@@ -81,20 +81,26 @@ jQuery(document).ready(function($) {
 
     // change referer
     $('form#options').on('submit', function(e){
+      if( ! $('input#post_type_name').val() ) {
+        $('input#post_type_name').focus();
+        return false;
+      }
+
       var referer = $('[name="_wp_http_referer"]').val();
-      var type = ($('input#post_type_name').val()) ? '&post-type=' + $('input#post_type_name').val() : '';
-      $('[name="_wp_http_referer"]').val( referer + type );
+      var type = '&post-type=' + $('input#post_type_name').val();
+      $('[name="_wp_http_referer"]').val( referer.replace('do=add', '') + type );
     });
 
     var patterns = [
       { selector : 'input#post_type_name', pattern : '[id]' },
-      { selector : 'input#labels_singular_name', pattern : '[singular]' },
-      { selector : 'input#labels_name', pattern : '[plural]' },
-      { selector : 'input#labels_name_admin_bar', pattern : '[accusative]' }
+      { selector : 'input#post_type_labels_singular_name', pattern : '[singular]' },
+      { selector : 'input#post_type_labels_name', pattern : '[plural]' },
+      { selector : 'input#post_type_labels_name_admin_bar', pattern : '[accusative]' }
     ];
 
     patterns.forEach(function(item, i, arr) {
       $(item.selector).on('keyup change focus', function(event) {
+        if( $(this).attr('readonly') ) return false;
         var template = $(this).val();
 
         $("input[data-pattern]").each(function(index, el) {

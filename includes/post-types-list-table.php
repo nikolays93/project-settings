@@ -1,6 +1,6 @@
 <?php
 
-namespace PSettings;
+namespace ProjectSettings;
 
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly
@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) )
 if( ! class_exists( '\WP_List_Table' ) ) {
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
+
 class Post_Types_List_Table extends \WP_List_Table {
     private $types = array();
 
@@ -50,7 +51,7 @@ class Post_Types_List_Table extends \WP_List_Table {
             '_wpnonce' );
 
         $actions = array(
-            'edit' => '<a href="?page=project-settings&post-type='.$item['title'].'">'.__('Edit').'</a>',
+            'edit' => '<a href="?page='.ProjectSettings::OPTION_NAME.'&post-type='.$item['title'].'">'.__('Edit').'</a>',
             'delete' => '<a href="'.$remove_url.'">'.__('Delete').'</a>',
         );
 

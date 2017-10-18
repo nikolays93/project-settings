@@ -3,41 +3,41 @@
 $form = array(
 	array(
 		'type'      => 'checkbox',
-		'id'        => 'globals][check_updates',
-		'label'		=> 'Разрешить обновления',
+		'id'        => 'check_updates',
+		'label'		=> __('Allow updates', 'project-settings'),
 		'desc'      => 'Разрешить WordPress проверять обновления и указывать на их наличие. (Может показывать ошибки на страницах обновления)',
 		),
 	array(
 		'type'      => 'checkbox',
-		'id'        => 'globals][clear_dash',
-		'label'		=> 'Показывать все элементы консоли',
+		'id'        => 'clear_dash',
+		'label'		=> __('Show all dashboard elements', 'project-settings'),
 		'desc'      => 'Показывать все стандартные окна консоли.',
 		),
 	array(
 		'type'      => 'checkbox',
-		'id'        => 'globals][clear_toolbar',
-		'label'		=> 'Показывать все элементы тулбара',
+		'id'        => 'clear_toolbar',
+		'label'		=> __('Show all toolbar elements', 'project-settings'),
 		'desc'      => 'Показывать все стандартные ссылки верхнего админ. меню (тулбара).',
 		),
 	array(
 		'type'      => 'checkbox',
-		'id'        => 'globals][pre_menu',
-		'label'		=> 'Показывать скрытые пункты меню',
+		'id'        => 'pre_menu',
+		'label'		=> __('Show hidden menu items', 'project-settings'),
 		'desc'      => '',
 		),
 	array(
 		'type'      => 'checkbox',
-		'id'        => 'globals][pre_sub_menu',
-		'label'		=> 'Показывать скрытые пункты подменю',
+		'id'        => 'pre_sub_menu',
+		'label'		=> __('Show hidden sub menu items', 'project-settings'),
 		'desc'      => '',
 		),
 	array(
 		'type'      => 'hidden',
-		'id'        => 'globals][menu',
+		'id'        => 'menu',
 		),
 	array(
 		'type'      => 'hidden',
-		'id'        => 'globals][sub_menu',
+		'id'        => 'sub_menu',
 		)
 	);
 

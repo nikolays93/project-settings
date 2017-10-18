@@ -1,82 +1,90 @@
 <?php
+
+$checked = (isset($_GET['do']) && $_GET['do'] === 'add') ? array('checked' => 'true') : array();
+
 $cpt = array(
 	array(
 		'id' => 'public', // false
-		'name' => 'post_type][public',
+		'name' => 'public',
 		'type' => 'checkbox',
-		'label' => 'Public',
-		'desc' => 'Публичный или используется только технически',
+		'label' => __( 'Public', 'project-settings' ),
+		'desc' => __( 'Controls how the type is visible to authors (show_in_nav_menus, show_ui) and readers (exclude_from_search, publicly_queryable)', 'project-settings', 'project-settings' ),
 		// 'data-fade-Out' => 'tr#publicly_queryable > td, tr#publicly_queryable > th, tr#show_ui > td, tr#show_ui > th',
+		'custom_attributes' => $checked,
+		'value' => 'on',
 		),
 	array(
 		'id' => 'publicly_queryable',
-		'name' => 'post_type][publicly_queryable', // deph: public
+		'name' => 'publicly_queryable', // deph: public
 		'type' => 'checkbox',
-		'label' => 'Publicly queryable',
-		'desc' => 'Показывать во front\'е',
+		'label' => __( 'Publicly queryable', 'project-settings' ),
+		'desc' => __( 'Show in front query', 'project-settings' ),
+		'custom_attributes' => $checked,
 		),
 	array(
 		'id' => 'show_ui',
-		'name' => 'post_type][show_ui', // deph : public
+		'name' => 'show_ui', // deph : public
 		'type' => 'checkbox',
-		'label' => 'Show UI',
-		'desc' => 'Показывать управление типом записи',
+		'label' => __( 'Show UI', 'project-settings' ),
+		'desc' => __( 'Show User Interface for edit post type', 'project-settings' ),
+		'custom_attributes' => $checked,
 		),
 	array(
 		'id' => 'show_in_menu',
-		'name' => 'post_type][show_in_menu', // show_in_admin_bar, show_in_nav_menus
+		'name' => 'show_in_menu', // show_in_admin_bar, show_in_nav_menus
 		'type' => 'checkbox',
-		'label' => 'Show in Menu',
-		'desc' => 'Показывать ли в админ-меню',
+		'label' => __( 'Show in Menu', 'project-settings' ),
+		'desc' => __( 'Show in WordPress menu', 'project-settings' ),
+		'custom_attributes' => $checked,
 		),
 	array(
 		'id' => 'rewrite',
-		'name' => 'post_type][rewrite', // true
+		'name' => 'rewrite', // true
 		'type' => 'checkbox',
-		'label' => 'ReWrite',
-		'desc' => 'ЧПУ',
+		'label' => __( 'Rewrite', 'project-settings' ),
+		'desc' => __( 'Friendly URL', 'project-settings' ),
 		'default' => 'on'
 		),
 	array(
 		'id' => 'has_archive',
-		'name' => 'post_type][has_archive', // false
+		'name' => 'has_archive', // false
 		'type' => 'checkbox',
-		'label' => 'Has archive',
-		'desc' => 'Поддержка архивной страницы',
+		'label' => __( 'Has archive', 'project-settings' ),
+		'desc' => __( 'Archive page support', 'project-settings' ),
 		),
 	array(
 		'id' => 'hierarchical',
-		'name' => 'post_type][hierarchical', // false
+		'name' => 'hierarchical', // false
 		'type' => 'checkbox',
-		'label' => 'Hierarchical',
-		'desc' => 'Родители / тексономии',
+		'label' => __( 'Hierarchical', 'project-settings' ),
+		'desc' => __( 'Parents \ children', 'project-settings' ),
 		),
-	array(
-		'id' => 'query_var',
-		'name' => 'post_type][query_var', // deph : post_type_name
-		'type' => 'text',
-		'label' => 'Query var',
-		'desc' => '$post_type в query_var',
-		'data-pattern' => '[id]',
-		),
+	// array(
+	// 	'id' => 'query_var',
+	// 	'name' => 'query_var', // deph : post_type_name
+	// 	'type' => 'text',
+	// 	'label' => __( 'Query var', 'project-settings' ),
+	// 	'desc' => __( '$post_type в query_var', 'project-settings' ),
+	// 	'data-pattern' => '[id]',
+	// 	),
 	array(
 		'id' => 'capability_type',
-		'name' => 'post_type][capability_type', // capabilities
+		'name' => 'capability_type', // capabilities
 		'type' => 'text',
-		'label' => 'Capability as',
-		'desc' => 'Права такие же как..',
+		'label' => __( 'Capability', 'project-settings' ),
+		'desc' => __( 'The permissions are the same as..', 'project-settings' ),
 		'default' => 'post'
 		),
 	array(
 		'id' => 'menu_position',
-		'name' => 'post_type][menu_position',
+		'name' => 'menu_position',
 		'type' => 'number',
-		'label' => 'Menu position',
+		'label' => __( 'Menu position', 'project-settings' ),
 		'desc' => '',
 		),
 	// array(
 	// 	'id' => 'menu_icon',
-	// 	'name' => 'post_type][menu_icon',
+	// 	'name' => 'menu_icon',
 	// 	'type' => 'text',
 	// 	'label' => 'Menu icon',
 	// 	'default' => 'dashicons-admin-post',

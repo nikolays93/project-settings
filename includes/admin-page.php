@@ -46,12 +46,12 @@ class ProjectSettings_Page
 
         $page->add_metabox( 'globals', __('Globals', 'project-settings'), array($this, 'metabox_globals'), 'side' );
 
-        if( $args['post-type'] || $args['post-type'] ) {
-            $page->add_metabox( 'labels', __('Labels', 'project-settings'), array($this, 'metabox_labels'), 'normal' );
-            if( ! $this->is_builtin ) {
-                $page->add_metabox( 'main', __('Settings', 'project-settings'), array($this, 'metabox_main'), 'normal' );
+        if( 'add' === $args['do'] || $args['post-type'] ) {
+            if( 'add' === $args['do'] ) {
+                $page->add_metabox( 'main', __('Main', 'project-settings'), array($this, 'metabox_main'), 'normal' );
                 $page->add_metabox( 'supports', __('Supports', 'project-settings'), array($this, 'metabox_supports'), 'normal' );
             }
+            $page->add_metabox( 'labels', __('Labels', 'project-settings'), array($this, 'metabox_labels'), 'normal' );
         }
 
         $page->set_metaboxes();
@@ -65,16 +65,16 @@ class ProjectSettings_Page
      */
     function _assets()
     {
-        wp_enqueue_style( 'project-settings', PS_URL . '/assets/admin.css', array(), '1.0' );
-        wp_enqueue_script('project-settings', PS_URL . '/assets/admin.js',  array('jquery'), '1.0', true );
+        wp_enqueue_style( 'project-settings-style', PS_URL . '/assets/admin.css', array(), '1.0' );
+        wp_enqueue_script('project-settings-script', PS_URL . '/assets/admin.js',  array('jquery'), '1.0', true );
 
-        wp_localize_script( 'project-settings', 'menu_disabled', array(
-            'menu' => isset(self::$settings['globals']['menu']) ? self::$settings['globals']['menu'] : '',
-            'sub_menu' => isset(self::$settings['globals']['sub_menu']) ? self::$settings['globals']['sub_menu'] : '',
-            'edit_cpt_page' => self::SETTINGS
+        wp_localize_script( 'project-settings-script', 'menu_disabled', array(
+            'menu' => ProjectSettings::get( 'menu' ),
+            'sub_menu' => ProjectSettings::get( 'sub_menu' ),
+            'edit_cpt_page' => ProjectSettings::OPTION_NAME
             ) );
 
-        wp_localize_script( 'project-settings', 'post_types', array_values( get_post_types() ) );
+        wp_localize_script( 'project-settings-script', 'post_types', array_values( get_post_types() ) );
     }
 
     /**
@@ -84,44 +84,51 @@ class ProjectSettings_Page
      *     must be public for the WordPress
      */
     function welcome_page() {
-        ?>
-        <p>
-            <a href="?page=<?php echo $_REQUEST['page']; ?>&do=add" class="button button-primary alignright">Создать новый тип записей</a>
 
-            Здесь вы можете создать новый тип записи или изменить вид уже зарегистрированного типа <br> и\или скрыть не реализованный функционал CMS WordPress из меню.
-        </p>
-        <?php
+        echo sprintf('<a href="?page=%s&do=add" class="button button-primary alignright">%s</a>',
+            esc_attr( $_REQUEST['page'] ),
+            __( 'Create new post type', 'project-settings' )
+        );
+
+        _e( 'You may create new post type or edit him and hide no used wordpress functions from menu', 'project-settings' );
+
         $types = ProjectSettings::$post_types;
 
         if( sizeof( $types ) < 1 ) {
             return;
         }
 
-        // $table = new PSettings\Post_Types_List_Table();
-        // foreach ($types as $id => $type) {
-        //     $table->set_type( $id, $type['labels']['singular_name'], $type['labels']['name'] );
-        // }
+        $table = new Post_Types_List_Table();
+        foreach ($types as $id => $type) {
+            $table->set_type( $id, $type['labels']['singular_name'], $type['labels']['name'] );
+        }
 
-        // $table->prepare_items();
-        // $table->display();
-
-        $table = new Example_List_Table();
-        $table->set_fields( array('post_type' => ProjectSettings::OPTION_NAME) );
         $table->prepare_items();
+        $table->display();
+
+        // $table = new Example_List_Table();
+        // $table->set_fields( array('post_type' => ProjectSettings::OPTION_NAME) );
+        // $table->prepare_items();
         ?>
 
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-        <?php $table->display() ?>
+        <?php // $table->display() ?>
         <?php
     }
 
     function custom_type_page_settings(){
-        // WPForm::render(
-        //   apply_filters('post_type_data_render', include(PS_DIR . '/inc/settings/cpt.php'), 'page'),
-        //   get_active_cpt_or_pt(),
-        //   true,
-        //   array('admin_page' => self::SETTINGS)
-        //   );
+        $data = include(PS_DIR . '/fields/cpt.php');
+        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
+            'sub_name' => 'post-type',
+        ) );
+
+        if( !empty($_GET['post-type']) ) {
+            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
+                $form->set_active( self::sanitize_assoc_array($values) );
+            }
+        }
+
+        echo $form->render();
     }
 
 
@@ -155,49 +162,74 @@ class ProjectSettings_Page
         //     );
     }
 
+    static function sanitize_assoc_array($values)
+    {
+        if( ! is_array($values) ) return $values;
+        foreach ($values as $k => $v) {
+            if( is_array($v) ) {
+                foreach ($v as $key => $value) {
+                    $values[$k . '_' . $key] = $value;
+                }
+            }
+        }
+
+        return $values;
+    }
+
     function metabox_main(){
         $data = include(PS_DIR . '/fields/cpt-main.php');
         $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            // Defaults:
-            // 'admin_page'  => true,
-            // 'item_wrap'   => array('<p>', '</p>'),
-            // 'form_wrap'   => array('', ''),
-            // 'label_tag'   => 'th',
-            // 'hide_desc'   => false,
-            ) );
+            'sub_name'    => 'post_type',
+        ) );
+
+        if( !empty($_GET['post-type']) ) {
+            $form->set_active( ProjectSettings::get_type($_GET['post-type']) );
+        }
+
         echo $form->render();
     }
 
     function metabox_supports(){
-        // WPForm::render(
-        //     apply_filters('post_type_data_render', include(PS_DIR . '/inc/settings/cpt-supports.php'), 'supports'),
-        //     get_active_cpt_or_pt(),
-        //     true,
-        //     array('admin_page' => self::SETTINGS)
-        //     );
+        $data = include(PS_DIR . '/fields/cpt-supports.php');
+        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
+            'sub_name'    => 'post_type',
+        ) );
+
+        if( !empty($_GET['post-type']) ) {
+            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
+                $form->set_active( self::sanitize_assoc_array($values) );
+            }
+        }
+
+        echo $form->render();
     }
 
     function metabox_labels(){
-        // WPForm::render(
-        //     include(PS_DIR . '/inc/settings/cpt-labels.php'),
-        //     get_active_cpt_or_pt(),
-        //     true,
-        //     array('admin_page' => self::SETTINGS)
-        //     );
+        $data = include(PS_DIR . '/fields/cpt-labels.php');
+        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
+            'sub_name'    => 'post_type',
+        ) );
+
+        if( !empty($_GET['post-type']) ) {
+            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
+                $form->set_active( self::sanitize_assoc_array($values) );
+            }
+        }
+
+        echo $form->render();
     }
 
-    function metabox_globals(){
-        $add_class = (!empty($_COOKIE['developer'])) ? ' button-primary': '';
+    function metabox_globals()
+    {
+        $add_class = (!empty($_COOKIE['developer'])) ? 'button button-primary': 'button';
 
-        echo '<p><input type="button" id="setNotHide" class="button'.$add_class.'" value="Показывать мне скрытые меню"></p>';
+        echo sprintf('<p><input type="button" id="setNotHide" class="%s" value="%s"></p>',
+            esc_attr( $add_class ),
+            __( 'Show me hidden menus', 'project-settings' )
+        );
 
         $data = include(PS_DIR . '/fields/global.php');
         $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            // Defaults:
-            // 'admin_page'  => true,
-            // 'item_wrap'   => array('<p>', '</p>'),
-            // 'form_wrap'   => array('', ''),
-            // 'label_tag'   => 'th',
             'hide_desc'   => true,
             ) );
         echo $form->render();
@@ -210,41 +242,20 @@ class ProjectSettings_Page
  * Validate Input's Values
  */
 function validate( $values ) {
+
+    file_put_contents(__DIR__ . '/debug.log', print_r($values, 1) );
+    // return false;
     // Update Post Types
-    if( ! empty( $values['post_type_name'] ) ){
-        if( ! empty($values['labels']) ) {
-            $values['post_type']['labels'] = array_filter($values['labels']);
+    if( ! empty( $values['post_type']['post_type_name'] ) ) {
+
+        if( isset($values['post_type']['labels']) && is_array($values['post_type']['labels']) ) {
+            $values['post_type']['labels'] = array_filter($values['post_type']['labels']);
         }
 
-        unset($values['labels']);
-
-        if(!empty($values['supports']))
-            $values['post_type']['supports'] = $values['supports'];
-
-        unset($values['supports']);
-
-        self::$post_types[ strtolower($values['post_type_name']) ] = $values['post_type'];
-        update_option(CPTYPES, self::$post_types);
+        ProjectSettings::$post_types[ strtolower($values['post_type']['post_type_name']) ] = $values['post_type'];
+        update_option(ProjectSettings::OPTION_NAME_TYPES, ProjectSettings::$post_types);
 
         unset($values['post_type']);
-        unset($values['post_type_name']);
-
-        // Update fields
-        $fields = array();
-        if( isset($values['fields']) && is_array($values['fields']) ){
-            for ($i=0; $i < sizeof($values['fields']['type']) ; $i++) {
-                if( empty($values['fields']['id'][$i]) || empty($values['fields']['label'][$i]) )
-                    continue;
-
-                $fields[$i] = array(
-                    'id'    => $values['fields']['id'][$i],
-                    'label' => $values['fields']['label'][$i],
-                    'type'  => $values['fields']['type'][$i],
-                    );
-            }
-        }
-        if(sizeof($fields) >= 1 )
-            $values['fields'] = $fields;
     }
 
     return $values;

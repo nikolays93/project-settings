@@ -1,0 +1,522 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin\n"
+"POT-Creation-Date: 2017-10-18 22:51+0400\n"
+"PO-Revision-Date: 2017-10-18 23:14+0400\n"
+"Last-Translator: \n"
+"Language-Team: NikolayS93 <NikolayS93@yandex.ru>\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"X-Poedit-Basepath: ../.\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: includes/classes\n"
+"X-Poedit-SearchPathExcluded-1: languages\n"
+"X-Poedit-SearchPathExcluded-2: .git\n"
+
+#: fields/cpt-labels.php:6
+msgctxt "new_item"
+msgid "New [singular]"
+msgstr "Новая [singular]"
+
+#: fields/cpt-labels.php:7
+msgctxt "menu_name"
+msgid "[plural]"
+msgstr "[plural]"
+
+#: fields/cpt-labels.php:8
+msgctxt "all_items"
+msgid "All [plural]"
+msgstr "Все [plural]"
+
+#: fields/cpt-labels.php:9
+msgctxt "archives"
+msgid "All [plural]"
+msgstr "Все [plural]"
+
+#: fields/cpt-labels.php:10
+msgctxt "view_items"
+msgid "Show [plural]"
+msgstr "Показать [plural]"
+
+#: fields/cpt-labels.php:12
+msgctxt "add_new"
+msgid "Add [accusative]"
+msgstr "Добавить [accusative]"
+
+#: fields/cpt-labels.php:13
+msgctxt "add_new_item"
+msgid "Add new [accusative]"
+msgstr "Добавить [accusative]"
+
+#: fields/cpt-labels.php:14
+msgctxt "edit_item"
+msgid "Edit [accusative]"
+msgstr "Редактировать [accusative]"
+
+#: fields/cpt-labels.php:15
+msgctxt "view_item"
+msgid "View [accusative]"
+msgstr "Посмотреть [accusative]"
+
+#: fields/cpt-labels.php:16
+msgctxt "search_items"
+msgid "Search [accusative]"
+msgstr "Найти [accusative]"
+
+#: fields/cpt-labels.php:18
+msgctxt "not_found"
+msgid "No posts found"
+msgstr "По вашему запросу ничего не найдено"
+
+#: fields/cpt-labels.php:19
+msgctxt "not_found_in_trash"
+msgid "No posts found in Trash"
+msgstr "В корзине, по вашему запросу ничего не найдено"
+
+#: fields/cpt-labels.php:21
+msgctxt "featured_image"
+msgid "Thumbnail"
+msgstr "Миниатюра"
+
+#: fields/cpt-labels.php:22
+msgctxt "set_featured_image"
+msgid "Set thumbnail"
+msgstr "Установить миниатюру"
+
+#: fields/cpt-labels.php:23
+msgctxt "remove_featured_image"
+msgid "Remove thumbnail"
+msgstr "Удалить миниатюру"
+
+#: fields/cpt-labels.php:24
+msgctxt "use_featured_image"
+msgid "Use as thumbnail"
+msgstr "Использовать как миниатюру"
+
+#: fields/cpt-labels.php:26
+msgctxt "filter_items_list"
+msgid "filter list"
+msgstr "Фильтровать список"
+
+#: fields/cpt-labels.php:27
+msgctxt "items_list_navigation"
+msgid "Navigation"
+msgstr "Навигация"
+
+#: fields/cpt-labels.php:28
+msgctxt "items_list"
+msgid "Items list"
+msgstr "Список"
+
+#: fields/cpt-labels.php:30
+msgctxt "attributes"
+msgid "Attributes"
+msgstr "Свойства"
+
+#: fields/cpt-labels.php:40
+msgid "New item"
+msgstr "Новая запись"
+
+#: fields/cpt-labels.php:41
+msgid "Default is New Post/New Page."
+msgstr "По стандарту: \"Новая запись\"/\"Новая страница\""
+
+#: fields/cpt-labels.php:46
+msgid "Menu Name"
+msgstr "Заголовок в меню"
+
+#: fields/cpt-labels.php:47
+msgid "display left menu label. same as name (if empty)"
+msgstr "Заголовок который отображается в левом меню"
+
+#: fields/cpt-labels.php:56
+msgid "All items"
+msgstr "Все записи"
+
+#: fields/cpt-labels.php:57
+msgid "String for the submenu. Default is All Posts/All Pages."
+msgstr "Заголовок для суб меню. По стандарту: \"Все записи\"/\"Все страницы\""
+
+#: fields/cpt-labels.php:64
+msgid "Archives"
+msgstr "Архивы"
+
+#: fields/cpt-labels.php:65
+msgid "Default is All Posts/All Pages."
+msgstr "По стандарту: \"Все записи\"/\"Все страницы\""
+
+#: fields/cpt-labels.php:72
+msgid "View items"
+msgstr "Просмотреть записи"
+
+#: fields/cpt-labels.php:73
+msgid "Default is Show Posts/Show Pages."
+msgstr "По стандарту \"Показать запись\"/\"Показать страницу\" "
+
+#: fields/cpt-labels.php:81
+msgid "Add new"
+msgstr "Добавить новую"
+
+#: fields/cpt-labels.php:82
+msgid ""
+"The add new text. The default is \"Add New\" for both hierarchical and non-"
+"hierarchical post types. When internationalizing this string, please use a "
+"gettext context matching your post type."
+msgstr ""
+
+#: fields/cpt-labels.php:89
+msgid "Add new item"
+msgstr "Добавить одну"
+
+#: fields/cpt-labels.php:90
+msgid "Default is Add New Post/Add New Page"
+msgstr ""
+
+#: fields/cpt-labels.php:97
+msgid "Edit item"
+msgstr ""
+
+#: fields/cpt-labels.php:98
+msgid "Default is Edit Post/Edit Page"
+msgstr ""
+
+#: fields/cpt-labels.php:105
+msgid "View item"
+msgstr ""
+
+#: fields/cpt-labels.php:106
+msgid "Default is View Post/View Page."
+msgstr ""
+
+#: fields/cpt-labels.php:113
+msgid "Search items"
+msgstr ""
+
+#: fields/cpt-labels.php:114
+msgid "Default is Search Posts/Search Pages."
+msgstr ""
+
+#: fields/cpt-labels.php:122
+msgid "Not found"
+msgstr ""
+
+#: fields/cpt-labels.php:123
+msgid "Default is No posts found/No pages found."
+msgstr ""
+
+#: fields/cpt-labels.php:130
+msgid "Not found in Trash"
+msgstr ""
+
+#: fields/cpt-labels.php:131
+msgid "Default is No posts found in Trash/No pages found in Trash."
+msgstr ""
+
+#: fields/cpt-labels.php:137
+msgid "Label"
+msgstr "Лэйбл"
+
+#: fields/cpt-labels.php:138
+msgid "Used for translate post type"
+msgstr "Программное название для перевода типа записи"
+
+#: fields/cpt-labels.php:146
+msgid "Featured image"
+msgstr ""
+
+#: fields/cpt-labels.php:153
+msgid "Set Featured Image"
+msgstr ""
+
+#: fields/cpt-labels.php:160
+msgid "Remove Featured Image"
+msgstr ""
+
+#: fields/cpt-labels.php:167
+msgid "Use Featured Image"
+msgstr ""
+
+#: fields/cpt-labels.php:175
+msgid "Filter Items List"
+msgstr ""
+
+#: fields/cpt-labels.php:182
+msgid "Items List Navigation"
+msgstr ""
+
+#: fields/cpt-labels.php:189
+msgid "Items List"
+msgstr ""
+
+#: fields/cpt-labels.php:196
+msgid "Attributes"
+msgstr ""
+
+#: fields/cpt-main.php:7
+msgid "Public"
+msgstr "Публичный"
+
+#: fields/cpt-main.php:8
+msgid ""
+"Controls how the type is visible to authors (show_in_nav_menus, show_ui) and "
+"readers (exclude_from_search, publicly_queryable)"
+msgstr "Публичный или используется только технически"
+
+#: fields/cpt-main.php:15
+msgid "Publicly queryable"
+msgstr "Публичные запросы"
+
+#: fields/cpt-main.php:16
+msgid "Show in front query"
+msgstr "Показывать в запросах на сайте"
+
+#: fields/cpt-main.php:22
+msgid "Show UI"
+msgstr "Показывать пользовательский интерфейс"
+
+#: fields/cpt-main.php:23
+msgid "Show User Interface for edit post type"
+msgstr "Показывать управление типом записи"
+
+#: fields/cpt-main.php:29
+msgid "Show in Menu"
+msgstr "Показывать в меню"
+
+#: fields/cpt-main.php:30
+msgid "Show in WordPress menu"
+msgstr "Показывать в админ-меню"
+
+#: fields/cpt-main.php:36
+msgid "Rewrite"
+msgstr "Rewrite"
+
+#: fields/cpt-main.php:37
+msgid "Friendly URL"
+msgstr "ЧПУ"
+
+#: fields/cpt-main.php:44
+msgid "Has archive"
+msgstr "Создать архив"
+
+#: fields/cpt-main.php:45
+msgid "Archive page support"
+msgstr "Поддержка архивной страницы"
+
+#: fields/cpt-main.php:51
+msgid "Hierarchical"
+msgstr "Иерархичный"
+
+#: fields/cpt-main.php:52
+msgid "Parents \\ children"
+msgstr "Родители / Дети"
+
+#: fields/cpt-main.php:58
+msgid "Query var"
+msgstr "Переменная"
+
+#: fields/cpt-main.php:59
+msgid "$post_type в query_var"
+msgstr "Переменная $post_type в запросе"
+
+#: fields/cpt-main.php:66
+msgid "Capability"
+msgstr "Права"
+
+#: fields/cpt-main.php:67
+msgid "The permissions are the same as.."
+msgstr "Права такие же как.."
+
+#: fields/cpt-main.php:74
+msgid "Menu position"
+msgstr "Позиция в меню"
+
+#: fields/cpt-supports.php:6
+msgid "Post Title"
+msgstr "Заголовок"
+
+#: fields/cpt-supports.php:12
+msgid "Content Editor"
+msgstr "Содержание"
+
+#: fields/cpt-supports.php:18
+msgid "Post Thumbnail"
+msgstr "Превью"
+
+#: fields/cpt-supports.php:24
+msgid "Post Excerpt"
+msgstr "Краткое содержание"
+
+#: fields/cpt-supports.php:30
+msgid "Custom Fields"
+msgstr "Произвольные поля"
+
+#: fields/cpt-supports.php:36
+msgid "Page Attributes"
+msgstr "Свойства (позиция в иерархии)"
+
+#: fields/cpt.php:7
+msgid "Post type ID"
+msgstr "ID типа записи"
+
+#: fields/cpt.php:8
+msgid "The handle (slug) name of the post type."
+msgstr "Програмное имя (слаг) типа записи"
+
+#: fields/cpt.php:9
+msgid "e.g. offer"
+msgstr "к пр. offer"
+
+#: fields/cpt.php:15
+msgid "Singular"
+msgstr "Единственное число"
+
+#: fields/cpt.php:16
+msgid "name for one object of this post type."
+msgstr "Имя одного объекта типа записи"
+
+#: fields/cpt.php:17
+msgctxt "singular"
+msgid "e.g. Offer"
+msgstr "к пр. Акция"
+
+#: fields/cpt.php:22 includes/class-post-types-list-table.php:70
+msgid "Plural"
+msgstr "Мн. число"
+
+#: fields/cpt.php:23
+msgid "General name for the post type, usually plural."
+msgstr "Название типа записи, как правило, во множественном числе"
+
+#: fields/cpt.php:24
+msgid "e.g. Offers"
+msgstr "к пр. Акции"
+
+#: fields/cpt.php:30
+msgctxt "accusative"
+msgid "e.g. Offer"
+msgstr "к пр. Акцию"
+
+#: fields/cpt.php:31
+msgid "Accusative case (as singular)"
+msgstr "Винительный падеж"
+
+#: fields/cpt.php:32
+msgid "Admin bar name"
+msgstr "Название в горизонтальном меню"
+
+#: fields/cpt.php:37
+msgid "The following settings are optional:"
+msgstr "Следующие настройки заполнять не обязательно:"
+
+#: fields/cpt.php:42
+msgid "Description"
+msgstr "Описание"
+
+#: fields/global.php:7
+msgid "Allow updates"
+msgstr "Разрешить обновления"
+
+#: fields/global.php:13
+msgid "Show all dashboard elements"
+msgstr "Показывать все элементы консоли"
+
+#: fields/global.php:19
+msgid "Show all toolbar elements"
+msgstr "Показывать все элементы тулбара"
+
+#: fields/global.php:25
+msgid "Show hidden menu items"
+msgstr "Показывать скрытые пункты меню"
+
+#: fields/global.php:31
+msgid "Show hidden sub menu items"
+msgstr "Показывать скрытые пункты подменю"
+
+#: includes/admin-page.php:25 includes/admin-page.php:26
+msgid "Project Settings"
+msgstr "Настройки проекта"
+
+#: includes/admin-page.php:47
+msgid "Globals"
+msgstr "Настройки"
+
+#: includes/admin-page.php:51
+msgid "Main"
+msgstr "Главное"
+
+#: includes/admin-page.php:52
+msgid "Supports"
+msgstr "Поддержка"
+
+#: includes/admin-page.php:54
+msgid "Labels"
+msgstr "Заголовки"
+
+#: includes/admin-page.php:90
+msgid "Create new post type"
+msgstr "Создать новый тип записей"
+
+#: includes/admin-page.php:93
+msgid ""
+"You may create new post type or edit him and hide no used wordpress "
+"functions from menu"
+msgstr ""
+"Здесь вы можете создать новый тип записи или изменить вид уже "
+"зарегистрированного типа и скрыть не реализованный функционал CMS WordPress "
+"из меню."
+
+#: includes/admin-page.php:193
+msgid "Show me hidden menus"
+msgstr "Показывать мне скрытые меню"
+
+#: includes/class-post-types-list-table.php:53
+msgid "Edit"
+msgstr "Изменить"
+
+#: includes/class-post-types-list-table.php:54
+msgid "Delete"
+msgstr "Удалить"
+
+#: includes/class-post-types-list-table.php:68
+msgid "Title"
+msgstr "Заголовок"
+
+#: includes/class-post-types-list-table.php:69
+msgid "Single"
+msgstr "Ед. число"
+
+#: includes/register-post_type.php:8
+msgid "Post"
+msgstr "Запись"
+
+#~ msgctxt "use_featured_image"
+#~ msgid "Использовать как миниатюру"
+#~ msgstr "Использовать как миниатюру"
+
+#~ msgctxt "not_found"
+#~ msgid "No posts found in Trash"
+#~ msgstr "По вашему запросу ничего не найдено"
+
+#~ msgid "The handle (slug) name of the post type, usually plural."
+#~ msgstr ""
+#~ "Программное название (слаг) типа поста, как правило, во множественном "
+#~ "числе"
+
+#~ msgid "e.g. Offer"
+#~ msgstr "к пр. Акцию"
+
+#~ msgid "friendly URL"
+#~ msgstr "ЧПУ"
+
+#~ msgid "Show in front"
+#~ msgstr "Показывать во фронт-е"
+
+#~ msgid "Settings"
+#~ msgstr "Настройки"
