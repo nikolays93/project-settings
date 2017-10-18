@@ -61,6 +61,9 @@ function clear_dash(){
     unset($normal['dashboard_incoming_links']); //Входящие ссылки
     unset($normal['dashboard_recent_comments']); //Последние комментарии
     unset($normal['dashboard_plugins']); //Последние Плагины
+    if( ! current_user_can( 'edit_pages' ) ) {
+        unset($normal['dashboard_right_now']);
+    }
 }
 function clear_toolbar($wp_admin_bar){
     $wp_admin_bar->remove_node( 'appearance' );
