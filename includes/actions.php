@@ -2,10 +2,11 @@
 
 namespace ProjectSettings;
 
-if ( ! defined( 'ABSPATH' ) ) 
+if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly
 
-if( empty($_COOKIE['developer']) && isset($_GET['page']) && $_GET['page'] != ProjectSettings::OPTION_NAME ){
+$page = isset($_GET['page']) ? $_GET['page'] : false;
+if( empty($_COOKIE['developer']) && $page !== ProjectSettings::OPTION_NAME ){
     add_action( 'admin_menu', __NAMESPACE__ . '\hide_menus_init', 9999 );
 
     function hide_menus_init(){
