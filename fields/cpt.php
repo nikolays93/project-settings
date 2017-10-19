@@ -8,10 +8,8 @@ $cpt = array(
 		'desc' => __( 'The handle (slug) name of the post type.', 'project-settings' ),
 		'placeholder' => __( 'e.g. offer', 'project-settings' ),
 		'required' => 'true',
-		'custom_attributes' => array(
-			'required' => 'true',
-			'readonly' => !empty($_GET['post-type']) ? 'true' : false,
-		),
+		'custom_attributes' => !empty($_GET['post-type']) ?
+			array('readonly' => 'true') : array('required' => 'true'),
 		'value' => !empty($_GET['post-type']) ? esc_attr($_GET['post-type']) : false,
 	),
 	array(

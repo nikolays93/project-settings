@@ -11,7 +11,6 @@ $cpt = array(
 		'desc' => __( 'Controls how the type is visible to authors (show_in_nav_menus, show_ui) and readers (exclude_from_search, publicly_queryable)', 'project-settings', 'project-settings' ),
 		// 'data-fade-Out' => 'tr#publicly_queryable > td, tr#publicly_queryable > th, tr#show_ui > td, tr#show_ui > th',
 		'custom_attributes' => $checked,
-		'value' => 'on',
 		),
 	array(
 		'id' => 'publicly_queryable',
@@ -43,7 +42,7 @@ $cpt = array(
 		'type' => 'checkbox',
 		'label' => __( 'Rewrite', 'project-settings' ),
 		'desc' => __( 'Friendly URL', 'project-settings' ),
-		'default' => 'on'
+		'custom_attributes' => $checked,
 		),
 	array(
 		'id' => 'has_archive',

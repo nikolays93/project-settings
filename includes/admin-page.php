@@ -47,10 +47,11 @@ class ProjectSettings_Page
         $page->add_metabox( 'globals', __('Globals', 'project-settings'), array($this, 'metabox_globals'), 'side' );
 
         if( 'add' === $args['do'] || $args['post-type'] ) {
-            if( 'add' === $args['do'] ) {
+            if( ! ProjectSettings::is_built_in( $args['post-type'] ) ) {
                 $page->add_metabox( 'main', __('Main', 'project-settings'), array($this, 'metabox_main'), 'normal' );
                 $page->add_metabox( 'supports', __('Supports', 'project-settings'), array($this, 'metabox_supports'), 'normal' );
             }
+
             $page->add_metabox( 'labels', __('Labels', 'project-settings'), array($this, 'metabox_labels'), 'normal' );
         }
 
@@ -84,7 +85,6 @@ class ProjectSettings_Page
      *     must be public for the WordPress
      */
     function welcome_page() {
-
         echo sprintf('<a href="?page=%s&do=add" class="button button-primary alignright">%s</a>',
             esc_attr( $_REQUEST['page'] ),
             __( 'Create new post type', 'project-settings' )
@@ -119,7 +119,7 @@ class ProjectSettings_Page
     function custom_type_page_settings(){
         $data = include(PS_DIR . '/fields/cpt.php');
         $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            'sub_name' => 'post-type',
+            'sub_name' => 'post_type',
         ) );
 
         if( !empty($_GET['post-type']) ) {
@@ -183,7 +183,9 @@ class ProjectSettings_Page
         ) );
 
         if( !empty($_GET['post-type']) ) {
-            $form->set_active( ProjectSettings::get_type($_GET['post-type']) );
+            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
+                $form->set_active( self::sanitize_assoc_array($values) );
+            }
         }
 
         echo $form->render();
@@ -232,6 +234,7 @@ class ProjectSettings_Page
         $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
             'hide_desc'   => true,
             ) );
+
         echo $form->render();
 
         submit_button( 'Сохранить', 'primary right', 'save_changes' );
@@ -242,12 +245,9 @@ class ProjectSettings_Page
  * Validate Input's Values
  */
 function validate( $values ) {
-
-    file_put_contents(__DIR__ . '/debug.log', print_r($values, 1) );
     // return false;
     // Update Post Types
     if( ! empty( $values['post_type']['post_type_name'] ) ) {
-
         if( isset($values['post_type']['labels']) && is_array($values['post_type']['labels']) ) {
             $values['post_type']['labels'] = array_filter($values['post_type']['labels']);
         }

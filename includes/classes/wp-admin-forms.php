@@ -2,6 +2,9 @@
 
 namespace ProjectSettings;
 
+/**
+ * @todo: add defaults
+ */
 class WP_Admin_Forms {
     static $clear_value = false;
     protected $inputs, $args, $is_table, $active;
@@ -283,12 +286,15 @@ class WP_Admin_Forms {
                 break;
             case 'checkbox' :
                 $val = $field['value'] ? $field['value'] : 1;
-                $checked = checked( $entry, $val, false );
-                if( $field['default'] && ! $entry ) {
-                    $val = $field['default'];
-                    $checked = checked( true, true, false );
-                    $clear_value = '';
-                }
+                $checked = checked( $entry, true, false );
+                // if( $field['default'] ) {
+                //     if( ! $entry ) {
+                //         $checked = checked( in_array($entry, array('true', '1', 'on')), true, false );
+                //     }
+                //     $clear_value = 'false';
+                // }
+
+
 
                 // if $clear_value === false dont use defaults (couse default + empty value = true)
                 if( isset($clear_value) || false !== ($clear_value = self::$clear_value) ) {
@@ -428,10 +434,10 @@ class WP_Admin_Forms {
 
         $checked = ( $active === false ) ? false : true;
         if( $active === 'false' || $active === 'off' || $active === '0' )
-            $active = false;
+            return false;
 
         if( $active === 'true'  || $active === 'on'  || $active === '1' )
-            $active = true;
+            return true;
 
         if( $active || $field['default'] ){
             if( $field['value'] ){
@@ -448,9 +454,9 @@ class WP_Admin_Forms {
                 if( $active || (!$checked && $field['default']) )
                     return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 
     private static function admin_page_options( $fields, $option_name, $sub_name = false )
