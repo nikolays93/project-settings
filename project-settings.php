@@ -3,7 +3,7 @@
 Plugin Name: Настройки проекта
 Plugin URI: https://github.com/nikolays93/project-settings
 Description: Скрывает нераскрытый функционал WordPress. Предоставляет возможность создавать новые типы записей и редактировать заголовки ранее зарегистрированных.
-Version: 4.0
+Version: 4.0.1
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 Author EMAIL: nikolayS93@ya.ru
