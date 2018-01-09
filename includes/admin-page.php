@@ -40,6 +40,7 @@ class ProjectSettings_Page
                 update_option( ProjectSettings::OPTION_NAME_TYPES, ProjectSettings::$post_types );
             }
 
+            // flush_rewrite_rules();
             wp_redirect( get_admin_url() . 'options-general.php?page=' . ProjectSettings::OPTION_NAME );
             exit;
         }
@@ -129,37 +130,6 @@ class ProjectSettings_Page
         }
 
         echo $form->render();
-    }
-
-
-    function metabox2_callback() {
-        // array(
-        //     // id or name - required
-        //     array(
-        //         'id'    => 'example_0',
-        //         'type'  => 'text',
-        //         'label' => 'TextField',
-        //         'desc'  => 'This is example text field',
-        //         ),
-        //      array(
-        //         'id'    => 'example_1',
-        //         'type'  => 'select',
-        //         'label' => 'Select',
-        //         'options' => array(
-        //             // simples first (not else)
-        //             'key_option5' => 'option5',
-        //             'option1' => array(
-        //                 'key_option2' => 'option2',
-        //                 'key_option3' => 'option3',
-        //                 'key_option4' => 'option4'),
-        //             ),
-        //         ),
-        //     array(
-        //         'id'    => 'example_2',
-        //         'type'  => 'checkbox',
-        //         'label' => 'Checkbox',
-        //         ),
-        //     );
     }
 
     static function sanitize_assoc_array($values)
@@ -257,6 +227,9 @@ function validate( $values ) {
 
         unset($values['post_type']);
     }
+
+    custom_post_types();
+    flush_rewrite_rules();
 
     return $values;
 }
