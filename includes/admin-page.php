@@ -1,9 +1,14 @@
 <?php
 
-namespace ProjectSettings;
+namespace CDevelopers\ProjectSettings;
 
-class ProjectSettings_Page
+if ( ! defined( 'ABSPATH' ) )
+    exit; // disable direct access
+
+class Admin_Page
 {
+    static $form_args = array('sub_name' => 'post_type');
+
     function __construct()
     {
         $args = wp_parse_args( $_GET, array(
@@ -16,14 +21,14 @@ class ProjectSettings_Page
             $page_callback = array($this, 'custom_type_page_settings');
         }
         else {
-            $page_callback = array($this, 'welcome_page');
+            $page_callback = array(__CLASS__, 'welcome_page');
         }
 
-        $page = new WP_Admin_Page( ProjectSettings::OPTION_NAME );
+        $page = new WP_Admin_Page( Utils::OPTION );
         $page->set_args( array(
             'parent' => 'options-general.php',
-            'title' => __('Project Settings', 'project-settings'),
-            'menu' => __('Project Settings', 'project-settings'),
+            'title' => __('Project Settings', DOMAIN),
+            'menu' => __('Project Settings', DOMAIN),
             'callback'    => $page_callback,
             'validate'    => array($this, 'validate'),
             'permissions' => 'manage_options',
@@ -31,178 +36,131 @@ class ProjectSettings_Page
             'columns'     => 2,
             ) );
 
-        $page->set_assets( array($this, '_assets') );
+        $page->set_assets( array(__CLASS__, '_assets') );
 
         if( 'remove' === $args['do'] ) {
             if( wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['cpt'] ) ){
-                unset( ProjectSettings::$post_types[ $args['cpt'] ] );
+                unset( Utils::$post_types[ $args['cpt'] ] );
 
-                update_option( ProjectSettings::OPTION_NAME_TYPES, ProjectSettings::$post_types );
+                update_option( Utils::OPTION_NAME_TYPES, Utils::$post_types );
             }
 
             // flush_rewrite_rules();
-            wp_redirect( get_admin_url() . 'options-general.php?page=' . ProjectSettings::OPTION_NAME );
+            wp_redirect( get_admin_url() . 'options-general.php?page=' . Utils::OPTION );
             exit;
         }
 
-        $page->add_metabox( 'globals', __('Globals', 'project-settings'), array($this, 'metabox_globals'), 'side' );
+        $page->add_metabox( 'globals', __('Globals', DOMAIN), array($this, 'metabox_globals'), 'side' );
 
         if( 'add' === $args['do'] || $args['post-type'] ) {
-            if( ! ProjectSettings::is_built_in( $args['post-type'] ) ) {
-                $page->add_metabox( 'main', __('Main', 'project-settings'), array($this, 'metabox_main'), 'normal' );
-                $page->add_metabox( 'supports', __('Supports', 'project-settings'), array($this, 'metabox_supports'), 'normal' );
+            if( ! Utils::is_built_in( $args['post-type'] ) ) {
+                $page->add_metabox( 'main', __('Main', DOMAIN), array($this, 'metabox_main'), 'normal' );
+                $page->add_metabox( 'supports', __('Supports', DOMAIN), array($this, 'metabox_supports'), 'normal' );
             }
 
-            $page->add_metabox( 'labels', __('Labels', 'project-settings'), array($this, 'metabox_labels'), 'normal' );
+            $page->add_metabox( 'labels', __('Labels', DOMAIN), array($this, 'metabox_labels'), 'normal' );
         }
 
         $page->set_metaboxes();
     }
 
-    /**
-     * Добавить js/css файлы (@hook admin_enqueue_scripts)
-     *
-     * @access
-     *     must be public for the WordPress
-     */
-    function _assets()
+    static function _assets()
     {
-        wp_enqueue_style( 'project-settings-style', PS_URL . '/assets/admin.css', array(), '1.0' );
-        wp_enqueue_script('project-settings-script', PS_URL . '/assets/admin.js',  array('jquery'), '1.0', true );
+        $assets = Utils::get_plugin_url('assets');
+        wp_enqueue_style( 'project-settings-style', $assets . '/admin.css', array(), '1.0' );
+        wp_enqueue_script('project-settings-script', $assets . '/admin.js',  array('jquery'), '1.0', true );
 
         wp_localize_script( 'project-settings-script', 'menu_disabled', array(
-            'menu' => ProjectSettings::get( 'menu' ),
-            'sub_menu' => ProjectSettings::get( 'sub_menu' ),
-            'edit_cpt_page' => ProjectSettings::OPTION_NAME
+            'menu' => Utils::get( 'menu' ),
+            'sub_menu' => Utils::get( 'sub_menu' ),
+            'edit_cpt_page' => Utils::OPTION
             ) );
 
         wp_localize_script( 'project-settings-script', 'post_types', array_values( get_post_types() ) );
     }
 
-    /**
-     * Основное содержимое страницы
-     *
-     * @access
-     *     must be public for the WordPress
-     */
-    function welcome_page() {
+    static function welcome_page()
+    {
         echo sprintf('<a href="?page=%s&do=add" class="button button-primary alignright">%s</a>',
             esc_attr( $_REQUEST['page'] ),
-            __( 'Create new post type', 'project-settings' )
-        );
+            __( 'Create new post type', DOMAIN )
+            );
 
-        _e( 'You may create new post type or edit him and hide no used wordpress functions from menu', 'project-settings' );
+        _e( 'You may create new post type or edit him and hide no used wordpress functions from menu', DOMAIN );
 
-        $types = ProjectSettings::$post_types;
-
-        if( sizeof( $types ) < 1 ) {
-            return;
-        }
-
-        $table = new Post_Types_List_Table();
-        foreach ($types as $id => $type) {
-            $table->set_type( $id, $type['labels']['singular_name'], $type['labels']['name'] );
-        }
-
-        $table->prepare_items();
-        $table->display();
-
-        // $table = new Example_List_Table();
-        // $table->set_fields( array('post_type' => ProjectSettings::OPTION_NAME) );
-        // $table->prepare_items();
-        ?>
-
-        <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-        <?php // $table->display() ?>
-        <?php
-    }
-
-    function custom_type_page_settings(){
-        $data = include(PS_DIR . '/fields/cpt.php');
-        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            'sub_name' => 'post_type',
-        ) );
-
-        if( !empty($_GET['post-type']) ) {
-            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
-                $form->set_active( self::sanitize_assoc_array($values) );
+        if( $types = Utils::get_post_types() ) {
+            echo '<!-- <form id="" method="get"> -->';
+            $table = new Post_Types_List_Table();
+            foreach ($types as $id => $type) {
+                $table->set_type( $id, $type['labels']['singular_name'], $type['labels']['name'] );
             }
+
+            $table->prepare_items();
+            $table->display();
+            echo "<!-- </form> -->";
         }
 
-        echo $form->render();
+        printf('<input type="hidden" name="page" value="" />',
+            esc_attr($_REQUEST['page']));
     }
 
-    static function sanitize_assoc_array($values)
+    static function set_posttype_data( &$form )
     {
-        if( ! is_array($values) ) return $values;
-        foreach ($values as $k => $v) {
-            if( is_array($v) ) {
-                foreach ($v as $key => $value) {
-                    $values[$k . '_' . $key] = $value;
-                }
+        if( !empty($_GET['post-type']) ) {
+            if( $values = Utils::get_type( $_GET['post-type'] ) ) {
+                $form->set_active( Utils::sanitize_assoc_array($values) );
             }
         }
-
-        return $values;
     }
 
-    function metabox_main(){
-        $data = include(PS_DIR . '/fields/cpt-main.php');
-        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            'sub_name'    => 'post_type',
-        ) );
-
-        if( !empty($_GET['post-type']) ) {
-            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
-                $form->set_active( self::sanitize_assoc_array($values) );
-            }
-        }
+    static function custom_type_page_settings()
+    {
+        $form = new WP_Admin_Forms(
+            Utils::get_settings('cpt.php'), true, self::$form_args );
+        self::set_posttype_data( $form );
 
         echo $form->render();
     }
 
-    function metabox_supports(){
-        $data = include(PS_DIR . '/fields/cpt-supports.php');
-        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            'sub_name'    => 'post_type',
-        ) );
-
-        if( !empty($_GET['post-type']) ) {
-            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
-                $form->set_active( self::sanitize_assoc_array($values) );
-            }
-        }
+    static function metabox_main()
+    {
+        $form = new WP_Admin_Forms(
+            Utils::get_settings('cpt-main.php'), true, self::$form_args );
+        self::set_posttype_data( $form );
 
         echo $form->render();
     }
 
-    function metabox_labels(){
-        $data = include(PS_DIR . '/fields/cpt-labels.php');
-        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            'sub_name'    => 'post_type',
-        ) );
-
-        if( !empty($_GET['post-type']) ) {
-            if( $values = ProjectSettings::get_type($_GET['post-type']) ) {
-                $form->set_active( self::sanitize_assoc_array($values) );
-            }
-        }
+    static function metabox_supports()
+    {
+        $form = new WP_Admin_Forms(
+            Utils::get_settings('cpt-supports.php'), true, self::$form_args );
+        self::set_posttype_data( $form );
 
         echo $form->render();
     }
 
-    function metabox_globals()
+    static function metabox_labels()
+    {
+        $form = new WP_Admin_Forms(
+            Utils::get_settings('cpt-labels.php'), true, self::$form_args );
+        self::set_posttype_data( $form );
+
+        echo $form->render();
+    }
+
+    static function metabox_globals()
     {
         $add_class = (!empty($_COOKIE['developer'])) ? 'button button-primary': 'button';
 
         echo sprintf('<p><input type="button" id="setNotHide" class="%s" value="%s"></p>',
             esc_attr( $add_class ),
-            __( 'Show me hidden menus', 'project-settings' )
+            __( 'Show me hidden menus', DOMAIN )
         );
 
-        $data = include(PS_DIR . '/fields/global.php');
-        $form = new WP_Admin_Forms( $data, $is_table = true, $args = array(
-            'hide_desc'   => true,
+        $form = new WP_Admin_Forms(
+            Utils::get_settings('global.php'), $is_table = true, $args = array(
+                'hide_desc'   => true,
             ) );
 
         echo $form->render();
@@ -211,27 +169,27 @@ class ProjectSettings_Page
         echo '<div class="clear"></div>';
     }
 
-/**
- * Validate Input's Values
- */
-function validate( $values ) {
-    // return false;
-    // Update Post Types
-    if( ! empty( $values['post_type']['post_type_name'] ) ) {
-        if( isset($values['post_type']['labels']) && is_array($values['post_type']['labels']) ) {
-            $values['post_type']['labels'] = array_filter($values['post_type']['labels']);
+    /**
+     * Validate Input's Values
+     */
+    function validate( $values ) {
+        // Update Post Types
+        if( ! empty( $values['post_type']['post_type_name'] ) ) {
+            if( isset($values['post_type']['labels']) && is_array($values['post_type']['labels']) ) {
+                $values['post_type']['labels'] = array_filter($values['post_type']['labels']);
+            }
+
+            $post_types = Utils::get_post_types();
+            $post_types[ strtolower($values['post_type']['post_type_name']) ] = $values['post_type'];
+            update_option(Utils::OPTION_NAME_TYPES, $post_types);
+
+            unset($values['post_type']);
         }
 
-        ProjectSettings::$post_types[ strtolower($values['post_type']['post_type_name']) ] = $values['post_type'];
-        update_option(ProjectSettings::OPTION_NAME_TYPES, ProjectSettings::$post_types);
+        custom_post_types();
+        flush_rewrite_rules();
 
-        unset($values['post_type']);
+        return $values;
     }
-
-    custom_post_types();
-    flush_rewrite_rules();
-
-    return $values;
 }
-}
-new ProjectSettings_Page();
+new Admin_Page();

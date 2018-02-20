@@ -1,19 +1,19 @@
 <?php
 
+namespace CDevelopers\ProjectSettings;
+
+if ( ! defined( 'ABSPATH' ) )
+  exit; // disable direct access
+
 /**
  * Class Name: WP_Admin_Page
- * Class URI: https://github.com/nikolays93/WPAdminPage
  * Description: Create a new custom admin page.
  * Version: 2.2
  * Author: NikolayS93
  * Author URI: https://vk.com/nikolays_93
  * License: GNU General Public License v2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
- *
- * @todo  : add method for tab_sections ( add tab section )
  */
-
-namespace ProjectSettings;
 
 class WP_Admin_Page
 {
@@ -24,9 +24,12 @@ class WP_Admin_Page
 	protected $metaboxes = array();
 	protected $tab_sections = array();
 
+	private static $notices = array();
+
 	function __construct( $page_slug = false )
 	{
 		$this->page = $page_slug;
+		add_action( 'admin_notices', array(__CLASS__, 'notice_tpl') );
 	}
 
 	public function set_args( $deprecated, $args = array() )
@@ -67,7 +70,8 @@ class WP_Admin_Page
 		}
 	}
 
-	public function add_metabox( $handle, $label, $render_cb, $position = 'normal', $priority = 'high'){
+	public function add_metabox( $handle, $label, $render_cb, $position = 'normal', $priority = 'high')
+	{
 		$this->metaboxes[] = array(
 			'handle' => $handle,
 			'label' => $label,
@@ -77,7 +81,8 @@ class WP_Admin_Page
 			);
 	}
 
-	public function set_metaboxes(){
+	public function set_metaboxes()
+	{
 		add_action( 'add_meta_boxes', array($this, '_metabox') );
 	}
 
@@ -400,6 +405,16 @@ class WP_Admin_Page
 		return $inputs;
 	}
 
+	static function notice_tpl( $msg )
+	{
+		if( sizeof(self::$notices) ) {
+			foreach (self::$notices as $notice) {
+				echo sprintf('<div class="notice notice-%s is-dismissible">%s</div>',
+					esc_attr($notice->status), $notice->message );
+			}
+		}
+	}
+
 	public static function array_filter_recursive($input)
 	{
 		foreach ($input as &$value) {
@@ -417,5 +432,24 @@ class WP_Admin_Page
 		};
 
 		return array_map($func, $array);
+	}
+
+	public static function add_notice( $msg, $status = 'success', $fitler = 'the_content' )
+	{
+		if( is_object($msg) && !empty($msg->message) ) {
+			self::$notices[] = (object) array(
+				'status' => isset($msg->status) ? $msg->status : $status,
+				'message' => isset($msg->filter) ? apply_filters($msg->filter, $msg->message)
+					: apply_filters($fitler, $msg->message),
+				);
+		}
+		else {
+			$message = $fitler ? apply_filters( $fitler, $msg ) : $msg;
+
+			self::$notices[] = (object) array(
+				'status' => $status,
+				'message' => $message,
+				);
+		}
 	}
 }

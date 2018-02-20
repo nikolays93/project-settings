@@ -1,5 +1,7 @@
 <?php
 
+namespace CDevelopers\ProjectSettings;
+
 $cpt = array(
 	array(
 		'id' => 'post_type_name',

@@ -87,7 +87,7 @@ jQuery(document).ready(function($) {
 
     // change referer
     $('form#options').on('submit', function(e) {
-        var $referer = $('[name="_wp_http_referer"]');
+        var referer = $('[name="_wp_http_referer"]').val();
         if( $('input#post_type_name').val() ) {
             var type = '&post-type=' + $('input#post_type_name').val();
             $('[name="_wp_http_referer"]').val( referer.replace('do=add', '') + type );

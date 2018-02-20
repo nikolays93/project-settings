@@ -1,6 +1,6 @@
 <?php
 
-namespace ProjectSettings;
+namespace CDevelopers\ProjectSettings;
 
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly
@@ -31,11 +31,9 @@ class Post_Types_List_Table extends \WP_List_Table {
             case 'single':
             case 'plural':
                 return $item[$column_name];
-            // Show the whole array for troubleshooting purposes
-            // default:
-            //     return print_r($item,true); 
         }
     }
+
     /**
      * Render: Row Titles
      */
@@ -51,7 +49,7 @@ class Post_Types_List_Table extends \WP_List_Table {
             '_wpnonce' );
 
         $actions = array(
-            'edit' => '<a href="?page='.ProjectSettings::OPTION_NAME.'&post-type='.$item['title'].'">'.__('Edit').'</a>',
+            'edit' => '<a href="?page='.Utils::OPTION.'&post-type='.$item['title'].'">'.__('Edit').'</a>',
             'delete' => '<a href="'.$remove_url.'">'.__('Delete').'</a>',
         );
 
@@ -72,28 +70,7 @@ class Post_Types_List_Table extends \WP_List_Table {
         );
         return $columns;
     }
-    // /**
-    //  * Bulk actions
-    //  */
-    // function get_bulk_actions() {
-    //     $actions = array(
-    //         'delete'    => __('Delete')
-    //     );
-    //     return $actions;
-    // }
-    // function process_bulk_action() {
-    //     if( 'delete'===$this->current_action() ) {
-    //         $all_cpts = isset($_POST['cpt']) ? unserialize(str_replace('\"', '"', $_POST['cpt'])) : array();
-    //         if( count($all_cpts) >= 1 ){
-    //             foreach ($_POST['cpts'] as $cpt) {
-    //                 unset($all_cpts[$cpt]);
-    //             }
-    //         }
-    //         update_option( DT_CPT_OPTION, $all_cpts );
-    //         wp_redirect( $_POST['_wp_http_referer'] );
-    //         exit();
-    //     }
-    // }
+
     /**
      * Table Construct
      */
