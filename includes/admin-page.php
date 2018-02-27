@@ -65,16 +65,6 @@ class Admin_Page
         $page->add_metabox( 'labels', __('Labels', DOMAIN), array(__CLASS__, 'metabox_labels'), 'normal' );
     }
 
-    public static function view_post_types_table($values, $custom_values, $columns ) {
-
-        self::view_table('type', $values, $custom_values, $columns);
-    }
-
-    public static function view_taxonomies_table($values, $custom_values, $columns ) {
-
-        self::view_table('tax', $values, $custom_values, $columns);
-    }
-
     static function _assets()
     {
         $assets = Utils::get_plugin_url('assets');
@@ -235,6 +225,16 @@ class Admin_Page
                 $table->display();
             }
         }
+    }
+
+    public static function view_post_types_table($values, $custom_values, $columns ) {
+
+        self::view_table('type', $values, $custom_values, $columns);
+    }
+
+    public static function view_taxonomies_table($values, $custom_values, $columns ) {
+
+        self::view_table('tax', $values, $custom_values, $columns);
     }
 
     static function start_page()
