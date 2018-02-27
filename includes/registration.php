@@ -107,6 +107,19 @@ class Registration
     }
 
     /**
+     * Удаляет однин тип заиписи/одну таксаномию из опцию
+     *
+     * @param string $context types | taxes
+     * @param array  $handle  handle/id типа записи / таксаномии
+     */
+    private static function del_custom_registred( $context = 'types', $handle )
+    {
+        $option = self::get_register_option( $context );
+        unset( $option[ $handle ] );
+        self::update_register_option( $context, $option );
+    }
+
+    /**
      * Получить все зарегистрированные плагином типы записей
      */
     public static function get_custom_post_types() {
@@ -140,6 +153,26 @@ class Registration
     public static function set_custom_taxonomies( Array $value ) {
 
         self::set_custom_register('taxes', $value);
+    }
+
+    /**
+     * Удалить из опции однин тип записи
+     *
+     * @param string $handle  handle/id типа записи / таксаномии
+     */
+    public static function del_custom_post_types( $handle ) {
+
+        self::del_custom_register('types', $handle);
+    }
+
+    /**
+     * Удалить из опции одну таксаномию
+     *
+     * @param string $handle  handle/id типа записи / таксаномии
+     */
+    public static function del_custom_taxanomies( $handle ) {
+
+        self::del_custom_register('taxes', $handle);
     }
 
     /** Builtins */

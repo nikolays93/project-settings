@@ -89,19 +89,11 @@ class Admin_Page
             array_fill_keys(array('post-type', 'taxonomy', 'do', 'cpt', 'tax'), '') );
 
         if( 'remove' === $args['do'] ) {
-            if( $args['cpt'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['cpt'] ) ) {
-                $post_types = Utils::get_post_types();
-                unset( $post_types[ $args['cpt'] ] );
+            if( $args['cpt'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['cpt'] ) )
+                Registration::del_custom_post_types( $args['cpt'] );
 
-                update_option( Utils::OPTION_NAME_TYPES, $post_types );
-            }
-
-            if( $args['tax'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['tax'] ) ) {
-                $taxonomies = Utils::get_post_types();
-                unset( $taxonomies[ $args['tax'] ] );
-
-                update_option( Utils::OPTION_NAME_TAXES, $taxonomies );
-            }
+            if( $args['tax'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['tax'] ) )
+                Registration::del_custom_taxanomies( $args['tax'] );
 
             wp_redirect( get_admin_url() . 'options-general.php?page=' . Utils::OPTION );
             exit;
