@@ -2,7 +2,7 @@ jQuery(document).ready(function($) {
     console.log('project-settings script loaded');
 
     // Считаем нажатые глазки
-    function compileResult(){
+    function compileResult() {
         var result = '';
         $('#adminmenu>li>span.after').each(function(){
             if($(this).hasClass('hide')){
@@ -20,15 +20,23 @@ jQuery(document).ready(function($) {
                 result += parent + '>' + obj +',';
             }
         });
+
         $('input#sub_menu').val(result);
     }
 
     // Добавить шестерни
-    $('#adminmenu > li > a').each(function() {
+    $('#adminmenu > li a').each(function() {
         var elem = $(this).attr('href').split('?');
-        if(elem[0] == 'edit.php'){
+        if('edit.php' == elem[0]){
             elem[1] = elem[1] ? elem[1].replace('_', '-') : 'post-type=post';
 
+            link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + elem[1];
+            $(this).parent('li').append(
+                $("<a></a>").attr('href', link).attr('class', 'after dashicons dashicons-admin-generic') );
+        }
+
+        if('edit-tags.php' == elem[0]) {
+            elem[1] = elem[1].split('&')[0];
             link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + elem[1];
             $(this).parent('li').append(
                 $("<a></a>").attr('href', link).attr('class', 'after dashicons dashicons-admin-generic') );
@@ -92,6 +100,11 @@ jQuery(document).ready(function($) {
             var type = '&post-type=' + $('input#post_type_name').val();
             $('[name="_wp_http_referer"]').val( referer.replace('do=add', '') + type );
         }
+
+        if( $('input#taxonomy_name').val() ) {
+            var type = '&taxonomy=' + $('input#taxonomy_name').val();
+            $('[name="_wp_http_referer"]').val( referer.replace('do=add', '') + type );
+        }
     });
 
     var patterns = [
@@ -123,5 +136,30 @@ jQuery(document).ready(function($) {
                 }
             });
         });
+    });
+
+    var tables = ['post-types', 'taxonomies'];
+    $.each(tables, function(index, val) {
+        var $table = $('table.'+ val +'_table');
+        if( $table.length ) {
+            var $filter = $('#' + val + '_table__filter');
+            var $tbody = $table.find('tbody');
+            var columns = $table.find('thead tr th').length + 1;
+
+            $filter.on('change', function(event) {
+                var val = $filter.val();
+                $tbody.find('tr').each(function(index, el) {
+                    $(this).hide().removeClass('showed');
+
+                    if( '' == val || val == $(this).attr('class') )
+                        $(this).show().addClass('showed');
+                });
+
+                $tbody.find('.empty').remove();
+                if( ! $tbody.find('tr.showed').length ) {
+                    $tbody.append('<tr class="empty"><td colspan="'+ columns +'">Данных не найдено</td></tr>')
+                }
+            }).trigger('change');
+        }
     });
 });

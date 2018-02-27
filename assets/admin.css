@@ -14,6 +14,11 @@
 	opacity: 1;
 	padding: 0;
 }
+@media only screen and (min-width: 783px) and (max-width: 960px) {
+	#adminmenu li .after {
+		display: none;
+	}
+}
 #adminmenu li .after.hide {
 	color: #fff;
 }
@@ -27,10 +32,45 @@
 #adminmenu li a.after.dashicons {
 	right: 25px;
 	line-height: 36px;
+	padding: 0;
+	font-size: 20px;
 }
+#adminmenu li .wp-submenu .after.dashicons {
+    padding: 0;
+    line-height: 28px;
+}
+#adminmenu li .wp-submenu span.after.dashicons {
+	line-height: 28px;
+}
+
 input[type="text"], input[type="number"]{
 	display: block;
 }
 input[type="number"] {
 	width: 80px;
 }
+
+.pre-table-wrapper {
+	padding: 15px 0;
+}
+.pre-table-wrapper h3 {
+	margin: 5px 0;
+}
+.pre-table-wrapper label {
+	margin: 0 5px;
+}
+.pre-table-wrapper label span {
+	display: inline-block;
+	margin: 5px;
+}
+.wp-list-table.taxonomies_table,
+.wp-list-table.post-types_table {
+	position: relative;
+	top: -30px;
+}
+.wp-list-table.taxonomies_table + .tablenav,
+.wp-list-table.post-types_table + .tablenav {
+	display: none;
+}
+/** screen and (max-width: 782px) */
+/** only screen and (max-width: 960px) 

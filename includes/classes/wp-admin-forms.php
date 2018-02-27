@@ -66,7 +66,7 @@ class WP_Admin_Forms {
         $this->active = $active;
     }
 
-    public static function render_input( &$field, $active, $for_table = false )
+    public static function render_input( &$field, $active = array(), $for_table = false )
     {
         $defaults = array(
             'type'              => 'text',
@@ -97,6 +97,7 @@ class WP_Admin_Forms {
             $field['placeholder'] = $field['default'];
         }
 
+        $active = is_string($active) ? array($field['id'] => $active) : $active;
         $field['id'] = str_replace('][', '_', $field['id']);
         $entry = self::parse_entry($field, $active, $field['value']);
 
@@ -230,7 +231,7 @@ class WP_Admin_Forms {
             $html[] = $this->args['form_wrap'][0];
         }
         else {
-            $lc = implode( ' ', $field['label_class'] );
+            $lc = is_array($field['label_class']) ? implode( ' ', $field['label_class'] ) : $field['label_class'];
             $html[] = "<tr id='{$field['id']}'>";
             // @todo : add required symbol
             $html[] = "  <{$this->args['label_tag']} class='label'>";
@@ -313,8 +314,16 @@ class WP_Admin_Forms {
             }
         }
 
-        $label = ( ! $for_table && $field['label'] ) ?
-            "<label for='".esc_attr($field['id'])."'> {$field['label']} </label>" : '';
+        $label = array('', '');
+        if( ! $for_table && $field['label'] ) {
+            $label = array(
+                sprintf('<label for="%s" class="%s"><span>%s</span>',
+                    esc_attr($field['id']),
+                    esc_attr(is_array($field['label_class']) ? implode(' ', $field['label_class']) : $field['label_class']),
+                    $field['label']
+                ),
+            '</label>');
+        }
 
         $input = '';
         switch ( $field['type'] ) {
@@ -326,10 +335,11 @@ class WP_Admin_Forms {
                 if( !empty( $field['custom_attributes']['rows'] ) ) $attributes['rows'] = 5;
                 if( !empty( $field['custom_attributes']['cols'] ) ) $attributes['cols'] = 40;
 
-                $input .= $label;
+                $input .= $label[0];
                 $input .= '<textarea ' . self::get_attributes_text( $attributes ) . '>';
                 $input .= esc_textarea( $entry );
                 $input .= '</textarea>';
+                $input .= $label[1];
             break;
 
             case 'checkbox':
@@ -349,7 +359,7 @@ class WP_Admin_Forms {
                 }
 
                 $input .= '<input ' . self::get_attributes_text( $attributes ) . '/>';
-                $input .= $label;
+                $input .= $label[0] . $label[1];
             break;
 
             case 'select':
@@ -359,10 +369,11 @@ class WP_Admin_Forms {
                             $attributes['placeholder'] = $text ? $text : __( 'Choose an option' );
                     }
 
-                    $input .= $label;
+                    $input .= $label[0];
                     $input .= '<select ' . self::get_attributes_text( $attributes ) . '>';
                     $input .= self::get_select_options($field['options'], $entry);
                     $input .= '</select>';
+                    $input .= $label[1];
                 }
             break;
 
@@ -375,8 +386,9 @@ class WP_Admin_Forms {
                 $attributes['value'] = $field['value'] ? esc_attr( $field['value'] ) : esc_attr( $entry );
                 $attributes['class'] .= ' input-' . $attributes['type'];
 
-                $input .= $label;
+                $input .= $label[0];
                 $input .= '<input ' . self::get_attributes_text( $attributes ) . '/>';
+                $input .= $label[1];
             break;
         }
         return $input;
