@@ -89,11 +89,13 @@ class Admin_Page
             array_fill_keys(array('post-type', 'taxonomy', 'do', 'cpt', 'tax'), '') );
 
         if( 'remove' === $args['do'] ) {
-            if( $args['cpt'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['cpt'] ) )
-                Registration::del_custom_post_types( $args['cpt'] );
+            if( $args['post-type'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-'.$args['post-type'] ) ) {
+                Registration::del_custom_post_types( $args['post-type'] );
+            }
 
-            if( $args['tax'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-type-'.$args['tax'] ) )
-                Registration::del_custom_taxanomies( $args['tax'] );
+            if( $args['taxonomy'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-'.$args['taxonomy'] ) ) {
+                Registration::del_custom_taxanomies( $args['taxonomy'] );
+            }
 
             wp_redirect( get_admin_url() . 'options-general.php?page=' . Utils::OPTION );
             exit;

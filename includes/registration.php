@@ -162,7 +162,7 @@ class Registration
      */
     public static function del_custom_post_types( $handle ) {
 
-        self::del_custom_register('types', $handle);
+        self::del_custom_registred('types', $handle);
     }
 
     /**
@@ -172,7 +172,7 @@ class Registration
      */
     public static function del_custom_taxanomies( $handle ) {
 
-        self::del_custom_register('taxes', $handle);
+        self::del_custom_registred('taxes', $handle);
     }
 
     /** Builtins */
