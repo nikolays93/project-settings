@@ -169,7 +169,7 @@ class Admin_Page
     {
         $id = ( 'type' === $context ) ? 'post-types' : 'taxonomies';
         // $single = ( 'type' === $context ) ? 'post-type' : 'taxonomy';
-        $table = new Registrations_Table( 'type', array( 'plural' => $id . '_table' ) );
+        $table = new Registrations_Table( $context, array( 'plural' => $id . '_table' ) );
         $filter = '';
 
         if( $values ) {
