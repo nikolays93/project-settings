@@ -27,36 +27,13 @@ class Registration
         return $post_type;
     }
 
-    private static function get_custom_registred( $context = 'types' ) // || taxes
-    {
-        $registred = self::get_register_option( $context );
-        if( !empty($registred) && is_array($registred) ) {
-            foreach ( $registred as &$sanitize ) {
-                $sanitize = self::sanitize_register_option( $sanitize );
-            }
-        }
-
-        return apply_filters('project-settings-registred', $registred);
-    }
-
-    private static function set_custom_register( $context = 'types', Array $values ) // || taxes
-    {
-        $registred = self::get_register_option( $context );
-        $key  = ( 'types' === $context ) ? 'post_type' : 'taxonomy';
-        $name = ( 'types' === $context ) ? 'post_type_name' : 'taxonomy_name';
-
-        if( ! empty( $values[ $key ][ $name ] ) ) {
-            if( isset($values[ $key ]['labels']) && is_array($values[ $key ]['labels']) ) {
-                $values[ $key ]['labels'] = array_filter($values[ $key ]['labels']);
-            }
-
-            $option = self::get_register_option( $context );
-            $option[ strtolower($values[ $key ][ $name ]) ] = $values[ $key ];
-            self::update_register_option( $context, $option );
-        }
-    }
-
-    public static function get_register_option( $context = 'types' ) // || taxes
+    /**
+     * Получает опцию изходя из ключа $context
+     *
+     * @param  string $context types | taxes
+     * @return array Cписок всех зарегистрированных типов данных / таксаномий
+     */
+    public static function get_register_option( $context = 'types' )
     {
         $result = get_option(
             apply_filters( 'project-settings-register-option', Utils::REGISTER ), false );
@@ -69,37 +46,109 @@ class Registration
         return $result;
     }
 
-    public static function update_register_option( $context = 'types', $value = false ) // || taxes
+    /**
+     * Записывает опцию изходя из ключа $context
+     *
+     * @param  string       $context types | taxes - Ключ опции
+     * @param  array|false  $value   false - удалит, array() - запишет новое значение в опцию
+     * @return boolean               возвращает true если опция изменена, как в update_option()
+     */
+    public static function update_register_option( $context = 'types', $value = false )
     {
         $option = apply_filters( 'project-settings-register-option', Utils::REGISTER );
-        $result = get_option( $option, false );
+        $result = get_option( $option, array() );
 
-        $result[ $context ] = $value;
+        if( $value )    $result[ $context ] = $value;
+        else            unset($result[ $context ]);
 
-        update_option( $option, $result, apply_filters('project-settings-option-autoload', 'yes') );
+        return update_option( $option, $result, apply_filters('project-settings-option-autoload', 'yes') );
     }
 
+    /**
+     * Получить все зарегистрированные плагином типы записей / таксаномии
+     *
+     * @param  string $context types / taxes
+     * @return array
+     */
+    private static function get_custom_registred( $context )
+    {
+        $registred = self::get_register_option( $context );
+        if( !empty($registred) && is_array($registred) ) {
+            foreach ( $registred as &$sanitize ) {
+                $sanitize = self::sanitize_register_option( $sanitize );
+            }
+        }
+
+        return apply_filters('project-settings-registred', $registred);
+    }
+
+    /**
+     * Записывает однин тип заиписи/одну таксаномию в опцию
+     *
+     * @param string $context types | taxes
+     * @param array  $values  параметры типа записи/таксаномии
+     */
+    private static function set_custom_register( $context, Array $values )
+    {
+        $key  = ( 'types' === $context ) ? 'post_type' : 'taxonomy';
+        $name = ( 'types' === $context ) ? 'post_type_name' : 'taxonomy_name';
+
+        // Проверяем handle параметров
+        if( ! empty( $values[ $key ][ $name ] ) ) {
+            // Удаляем пустые заголовки
+            if( isset($values[ $key ]['labels']) && is_array($values[ $key ]['labels']) ) {
+                $values[ $key ]['labels'] = array_filter($values[ $key ]['labels']);
+            }
+
+            $option = self::get_register_option( $context );
+            $option[ strtolower($values[ $key ][ $name ]) ] = $values[ $key ];
+            self::update_register_option( $context, $option );
+        }
+    }
+
+    /**
+     * Получить все зарегистрированные плагином типы записей
+     */
     public static function get_custom_post_types() {
 
         return self::get_custom_registred('types');
     }
 
+    /**
+     * Получить все зарегистрированные плагином таксаномии
+     */
     public static function get_custom_taxonomies() {
 
         return self::get_custom_registred('taxes');
     }
 
-    public static function set_custom_post_types( Array $values ) {
+    /**
+     * Записать новый один тип записи
+     *
+     * @param array $value массив с параметрами типа записи
+     */
+    public static function set_custom_post_types( Array $value ) {
 
-        self::set_custom_register('types', $values);
+        self::set_custom_register('types', $value);
     }
 
-    public static function set_custom_taxonomies( Array $values ) {
+    /**
+     * Записать новую одну таксаномию
+     *
+     * @param array $value массив с параметрами таксаномии
+     */
+    public static function set_custom_taxonomies( Array $value ) {
 
-        self::set_custom_register('taxes', $values);
+        self::set_custom_register('taxes', $value);
     }
 
     /** Builtins */
+    /**
+     * Получить все зарегистрированные Wordpress'ом типы / таксономии
+     *
+     * @param  string $context  types | taxes
+     * @return array  $builtins список объектов полученных функцией get_taxonomies или get_post_types
+     */
     public static function get_builtins( $context = 'types' )
     {
         if( $builtins = wp_cache_get( 'builtin_' . $context, DOMAIN ) ) {
@@ -113,7 +162,14 @@ class Registration
         return $builtins;
     }
 
-    public static function is_built_in( $type_name = false, $context = 'types' )
+    /**
+     * Проверить является ли $type_name зарегистрированным Wordpress'ом типом / таксономией
+     *
+     * @param  string  $type_name handle-имя типа записи/таксаномии
+     * @param  string  $context   types | taxes
+     * @return boolean
+     */
+    public static function is_built_in( $type_name = '', $context = 'types' )
     {
         $builtins = apply_filters( 'project-settings-builtins', self::get_builtins( $context ) );
 
@@ -121,7 +177,8 @@ class Registration
     }
 
     /** Register hooks */
-    static function custom_post_types() {
+    static function register_custom_post_types()
+    {
         if( $post_types = self::get_custom_post_types() ) {
             foreach ($post_types as $post_type => $args) {
                 if( ! self::is_built_in( $post_type ) ) {
@@ -139,7 +196,8 @@ class Registration
         }
     }
 
-    static function custom_taxonomies() {
+    static function register_custom_taxonomies()
+    {
         if( $taxonomies = self::get_custom_taxonomies() ) {
             foreach ($taxonomies as $custom_tax => $args) {
                 if( empty($args['post_types']) ) continue;
@@ -159,8 +217,9 @@ class Registration
         }
     }
 
-    static function register_customs() {
-        add_action( 'wp_loaded', array(__CLASS__, 'custom_post_types'), 99 );
-        add_action( 'wp_loaded', array(__CLASS__, 'custom_taxonomies'), 99 );
+    static function register_customs()
+    {
+        add_action( 'wp_loaded', array(__CLASS__, 'register_custom_post_types'), 99 );
+        add_action( 'wp_loaded', array(__CLASS__, 'register_custom_taxonomies'), 99 );
     }
 }
