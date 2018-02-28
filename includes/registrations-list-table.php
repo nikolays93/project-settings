@@ -89,9 +89,12 @@ class Registrations_Table extends \WP_List_Table {
     /**
      * Render: Columns Data
      */
-    function column_default($item, $column_name) {
+    function column_default($item, $column_name)
+    {
+        if( isset($item[ $column_name ]) )
+            return $item[ $column_name ];
 
-        return $item[$column_name];
+        return false;
     }
 
     public function single_row( $item )

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) )
 
 class Admin_Page
 {
-    static $context = false;
+    static $args = array();
     static $type = 'type';
     static $form_args = array('sub_name' => 'post_type');
 
@@ -96,6 +96,7 @@ class Admin_Page
 
         $args = wp_parse_args( $_GET,
             array_fill_keys(array('do', 'context', 'value'), '') );
+        self::$args = $args;
 
         $page->add_metabox( 'globals', __('Global settings', DOMAIN),
             array(__CLASS__, 'metabox_globals'), 'side' );
@@ -112,18 +113,35 @@ class Admin_Page
             exit;
         }
 
-        if( 'add' === $args['do'] || 'edit' === $args['do'] ) {
+        if( 'add' === $args['do'] ) {
             self::set_main_metabox($page);
+            self::set_labels_metabox($page);
+            if( 'types' === $args['context'] )
+                self::set_supports_metabox($page);
 
-            if( 'types' == $args['context'] ) {
-                if( 'add' === $args['do'] || ! Registration::is_built_in( $args['value'], 'types' ) )
-                    self::set_supports_metabox($page);
+            add_action( "{$page->page}_after_form_inputs", array(__CLASS__, 'added_referer'), 10 );
+        }
+        elseif( 'edit' === $args['do'] ) {
+            if( 'types' === $args['context'] ) {
+                $custom_post_types = Registration::get_custom_post_types();
+                if( array_key_exists($args['value'], $custom_post_types) ) {
+                    if( !empty( $custom_post_types[ $args['value'] ][ Utils::OPTION ] ) ) {
+                        self::set_main_metabox($page);
+                        self::set_supports_metabox($page);
+                    }
+                }
+            }
+
+            if( 'taxes' === $args['context'] ) {
+                $custom_post_taxes = Registration::get_custom_taxanomies();
+                if( array_key_exists($args['value'], $custom_post_taxes) ) {
+                    if( !empty( $custom_post_taxes[ $args['value'] ][ Utils::OPTION ] ) ) {
+                        self::set_main_metabox($page);
+                    }
+                }
             }
 
             self::set_labels_metabox($page);
-
-            if( 'add' === $args['do'] )
-                add_action( "{$page->page}_after_form_inputs", array(__CLASS__, 'added_referer'), 10 );
         }
 
         $page->set_args( array(
@@ -167,12 +185,16 @@ class Admin_Page
 
     private static function view_table( $context = 'types', Array $values, $custom_values, $columns ) // || tax
     {
+        if( 'taxes' === $context )
+            $post_types = get_post_types( null, 'objects' );
+
         // $id = ( 'types' === $context ) ? 'post-types' : 'taxonomies';
         // $single = ( 'types' === $context ) ? 'post-type' : 'taxonomy';
         $table = new Registrations_Table( $context, array( 'plural' => $context . '_table' ) );
         $filter = '';
 
         $table->set_columns( $columns );
+
         foreach ($values as $value) {
             $classrow = $value->_builtin ? '_builtin' : 'registred';
             if( isset($custom_values[ $value->name ]) ) {
@@ -186,12 +208,12 @@ class Admin_Page
                 'classrow' => apply_filters( 'project-settings-table-type-classrow', $classrow, $context ),
                 );
 
-            if( 'tax' === $context ) {
+            if( 'taxes' === $context ) {
                 $objects = array();
                 foreach ($value->object_type as $type) {
-                    if(!isset($values[ $type ])) continue;
+                    if(!isset($post_types[ $type ])) continue;
 
-                    $objects[] = $values[ $type ]->label;
+                    $objects[] = $post_types[ $type ]->label;
                 }
 
                 $arrValue['objects'] = implode(', ', $objects);
@@ -280,7 +302,7 @@ class Admin_Page
     static function edit_page_settings()
     {
         $form = new WP_Admin_Forms(
-            Utils::get_settings( self::$type . '.php' ), true, self::$form_args );
+            Utils::get_settings( self::$args['context'] . '.php' ), true, self::$form_args );
         self::set_posttype_data( $form );
 
         echo $form->render();
@@ -295,7 +317,7 @@ class Admin_Page
         $args = wp_parse_args( array(
             'item_wrap' => array('<p><strong>', '</strong></p>')), self::$form_args );
         $form = new WP_Admin_Forms(
-            Utils::get_settings( self::$type . '-main.php' ), false, $args );
+            Utils::get_settings( self::$args['context'] . '-main.php' ), false, $args );
         self::set_posttype_data( $form );
 
         echo $form->render();
@@ -304,7 +326,7 @@ class Admin_Page
     static function metabox_supports()
     {
         $form = new WP_Admin_Forms(
-            Utils::get_settings( self::$type . '-supports.php' ), true, self::$form_args );
+            Utils::get_settings( self::$args['context'] . '-supports.php' ), true, self::$form_args );
         self::set_posttype_data( $form );
 
         echo $form->render();
@@ -313,7 +335,7 @@ class Admin_Page
     static function metabox_labels()
     {
         $form = new WP_Admin_Forms(
-            Utils::get_settings( self::$type . '-labels.php' ), true, self::$form_args );
+            Utils::get_settings( self::$args['context'] . '-labels.php' ), true, self::$form_args );
         self::set_posttype_data( $form );
 
         echo $form->render();

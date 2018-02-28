@@ -27,17 +27,19 @@ jQuery(document).ready(function($) {
     // Добавить шестерни
     $('#adminmenu > li a').each(function() {
         var elem = $(this).attr('href').split('?');
-        if('edit.php' == elem[0]){
-            elem[1] = elem[1] ? elem[1].replace('_', '-') : 'post-type=post';
+        if('edit.php' == elem[0]) {
+            var value  = 'do=edit&context=types&';
+                value += (! elem[1]) ? 'value=post' : elem[1].replace('post_type', 'value');
 
-            link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + elem[1];
+            link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + value;
             $(this).parent('li').append(
                 $("<a></a>").attr('href', link).attr('class', 'after dashicons dashicons-admin-generic') );
         }
 
         if('edit-tags.php' == elem[0]) {
-            elem[1] = elem[1].split('&')[0];
-            link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + elem[1];
+            var value  = 'do=edit&context=taxes&';
+                value += elem[1].replace('taxonomy', 'value');
+            link = '/wp-admin/options-general.php?page=' + menu_disabled.edit_cpt_page + '&' + value;
             $(this).parent('li').append(
                 $("<a></a>").attr('href', link).attr('class', 'after dashicons dashicons-admin-generic') );
         }

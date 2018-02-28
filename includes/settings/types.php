@@ -49,7 +49,7 @@ $cpt = array(
 
 if( 'add' === $get['do'] ) {
 	$cpt[] = array(
-		'id' => Utils::OPTION,
+		'id' => 'project-settings',
 		'value' => 'true',
 		'type' => 'hidden',
 	);

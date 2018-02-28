@@ -52,6 +52,8 @@ input[type="number"] {
 
 .pre-table-wrapper {
 	padding: 15px 0;
+	position: relative;
+	bottom: -30px;
 }
 .pre-table-wrapper h3 {
 	margin: 5px 0;
@@ -63,14 +65,6 @@ input[type="number"] {
 	display: inline-block;
 	margin: 5px;
 }
-.wp-list-table.taxonomies_table,
-.wp-list-table.post-types_table {
-	position: relative;
-	top: -30px;
-}
-.wp-list-table.taxonomies_table + .tablenav,
-.wp-list-table.post-types_table + .tablenav {
-	display: none;
-}
+
 /** screen and (max-width: 782px) */
 /** only screen and (max-width: 960px) 

@@ -219,7 +219,7 @@ class Registration
                 }
                 else {
                     /** Edit Registred Types */
-                    $obj = get_post_type_object( $cpt );
+                    $obj = get_post_type_object( $args['post_type_name'] );
                     if ( ! $obj ) continue;
 
                     $obj->labels = (object) array_merge(
