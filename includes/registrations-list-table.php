@@ -14,9 +14,9 @@ class Registrations_Table extends \WP_List_Table {
             $values = array(),
             $context = '';
 
-    function __construct($context = 'type', $args = array())
+    function __construct($context = 'types', $args = array())
     {
-        $this->context = ('type' === $context) ? 'post-type' : 'taxonomy';
+        $this->context = $context;
         parent::__construct($args);
     }
     /**
@@ -67,20 +67,18 @@ class Registrations_Table extends \WP_List_Table {
         $last =  mb_strtolower($last, 'UTF-8');
         $name = $first . $last;
 
-        $remove_props = sprintf('?page=%s&do=%s&%s=%s',
-            esc_attr( $_REQUEST['page'] ),
-            'remove',
-            esc_attr( $this->context ),
-            esc_attr( $item['title'] ) );
         $actions = array(
-            'edit' => sprintf('<a href="?page=%s&%s=%s">%s</a>',
+            'edit' => sprintf('<a href="?page=%s&do=edit&context=%s&value=%s">%s</a>',
                 Utils::OPTION,
                 esc_attr( $this->context ),
                 esc_attr( $item['title'] ),
                 esc_attr( __('Edit') )
             ),
             'delete' => sprintf('<a href="%s">%s</a>',
-                wp_nonce_url( $remove_props, 'trash-'.$item['title'], '_wpnonce' ),
+                wp_nonce_url( sprintf('?page=%s&do=remove&context=%s&value=%s',
+                    esc_attr( $_REQUEST['page'] ),
+                    esc_attr( $this->context ),
+                    esc_attr( $item['title'] ) ), 'trash-'.$item['title'], '_wpnonce' ),
                 __('Delete')
             ),
         );

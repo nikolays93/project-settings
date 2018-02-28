@@ -93,20 +93,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // change referer
-    $('form#options').on('submit', function(e) {
-        var referer = $('[name="_wp_http_referer"]').val();
-        if( $('input#post_type_name').val() ) {
-            var type = '&post-type=' + $('input#post_type_name').val();
-            $('[name="_wp_http_referer"]').val( referer.replace('do=add', '') + type );
-        }
-
-        if( $('input#taxonomy_name').val() ) {
-            var type = '&taxonomy=' + $('input#taxonomy_name').val();
-            $('[name="_wp_http_referer"]').val( referer.replace('do=add', '') + type );
-        }
-    });
-
+    // AutoChange labels
     var patterns = [
         { selector : 'input#post_type_name', pattern : '[id]' },
         { selector : 'input#labels_singular_name', pattern : '[singular]' },
@@ -138,28 +125,37 @@ jQuery(document).ready(function($) {
         });
     });
 
-    var tables = ['post-types', 'taxonomies'];
-    $.each(tables, function(index, val) {
-        var $table = $('table.'+ val +'_table');
-        if( $table.length ) {
-            var $filter = $('#' + val + '_table__filter');
-            var $tbody = $table.find('tbody');
-            var columns = $table.find('thead tr th').length + 1;
+    $.each($('.wp-list-table'), function(index, el) {
+        var $table = $(el);
+        var id = $table.attr('class').replace('wp-list-table widefat fixed striped ', '');
+        var $filter = $('#' + id + '__filter');
+        var $tbody = $table.find('tbody');
+        var columns = $table.find('thead tr th').length + 1;
 
-            $filter.on('change', function(event) {
-                var val = $filter.val();
-                $tbody.find('tr').each(function(index, el) {
-                    $(this).hide().removeClass('showed');
+        $filter.on('change', function(event) {
+            var val = $filter.val();
+            $tbody.find('tr').each(function(index, el) {
+                $(this).hide().removeClass('showed');
 
-                    if( '' == val || val == $(this).attr('class') )
-                        $(this).show().addClass('showed');
-                });
+                if( '' == val || val == $(this).attr('class') )
+                    $(this).show().addClass('showed');
+            });
 
-                $tbody.find('.empty').remove();
-                if( ! $tbody.find('tr.showed').length ) {
-                    $tbody.append('<tr class="empty"><td colspan="'+ columns +'">Данных не найдено</td></tr>')
-                }
-            }).trigger('change');
-        }
+            $tbody.find('.empty').remove();
+            if( ! $tbody.find('tr.showed').length ) {
+                $tbody.append('<tr class="empty"><td colspan="'+ columns +'">Данных не найдено</td></tr>')
+            }
+        }).trigger('change');
     });
+
+    $('#globals.postbox').removeClass('closed');
+    if( 'do' in menu_disabled._Request ) {
+        switch (menu_disabled._Request.do) {
+            case 'add':
+            case 'edit':
+            case 'remove':
+                $('#globals.postbox').addClass('closed');
+                break;
+        }
+    }
 });

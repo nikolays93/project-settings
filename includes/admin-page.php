@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) )
 
 class Admin_Page
 {
+    static $context = false;
     static $type = 'type';
     static $form_args = array('sub_name' => 'post_type');
 
@@ -42,8 +43,8 @@ class Admin_Page
 
     private static function set_posttype_data( &$form )
     {
-        if( !empty($_GET['post-type']) ) {
-            if( $values = self::get_type( $_GET['post-type'] ) ) {
+        if( !empty($_GET['value']) ) {
+            if( $values = self::get_type( $_GET['value'] ) ) {
                 $form->set_active( self::sanitize_assoc_array($values) );
             }
         }
@@ -74,10 +75,18 @@ class Admin_Page
         wp_localize_script( 'project-settings-script', 'menu_disabled', array(
             'menu' => Utils::get( 'menu' ),
             'sub_menu' => Utils::get( 'sub_menu' ),
-            'edit_cpt_page' => Utils::OPTION
+            'edit_cpt_page' => Utils::OPTION,
+            '_Request' => $_REQUEST,
             ) );
 
         wp_localize_script( 'project-settings-script', 'post_types', array_values( get_post_types() ) );
+    }
+
+    static function added_referer()
+    {
+        printf('<input type="hidden" name="_wp_http_referer" value="%s">',
+            esc_url( admin_url( "options-general.php?page=" . Utils::OPTION ) )
+        );
     }
 
     function __construct()
@@ -86,149 +95,141 @@ class Admin_Page
         $page->set_assets( array(__CLASS__, '_assets') );
 
         $args = wp_parse_args( $_GET,
-            array_fill_keys(array('post-type', 'taxonomy', 'do', 'cpt', 'tax'), '') );
+            array_fill_keys(array('do', 'context', 'value'), '') );
+
+        $page->add_metabox( 'globals', __('Global settings', DOMAIN),
+            array(__CLASS__, 'metabox_globals'), 'side' );
 
         if( 'remove' === $args['do'] ) {
-            if( $args['post-type'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-'.$args['post-type'] ) ) {
-                Registration::del_custom_post_types( $args['post-type'] );
-            }
-
-            if( $args['taxonomy'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-'.$args['taxonomy'] ) ) {
-                Registration::del_custom_taxanomies( $args['taxonomy'] );
+            if( $args['value'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'trash-'.$args['value'] ) ) {
+                if( 'types' == $args['context'] )
+                    Registration::del_custom_post_types( $args['value'] );
+                if( 'taxes' == $args['context'] )
+                    Registration::del_custom_taxanomies( $args['value'] );
             }
 
             wp_redirect( get_admin_url() . 'options-general.php?page=' . Utils::OPTION );
             exit;
         }
 
-        $columns = 2;
-        if( 'add' === $args['do'] || $args['post-type'] ) {
-            self::$type = 'type';
-            self::$form_args = array('sub_name' => 'post_type');
-            $page_callback = array(__CLASS__, 'edit_page_settings');
+        if( 'add' === $args['do'] || 'edit' === $args['do'] ) {
+            self::set_main_metabox($page);
 
-            if( !$args['post-type'] ||
-                ($args['post-type'] && ! Registration::is_built_in( $args['post-type'], 'types' )) ) {
-                self::set_main_metabox($page);
-                self::set_supports_metabox($page);
+            if( 'types' == $args['context'] ) {
+                if( 'add' === $args['do'] || ! Registration::is_built_in( $args['value'], 'types' ) )
+                    self::set_supports_metabox($page);
             }
 
-            self::set_labels_metabox( $page );
-        }
-        elseif( 'add_taxonomy' === $args['do'] || $args['taxonomy'] ) {
-            self::$type = 'tax';
-            self::$form_args = array('sub_name' => 'taxonomy');
-            $page_callback = array(__CLASS__, 'edit_page_settings');
+            self::set_labels_metabox($page);
 
-            if( !$args['taxonomy'] ||
-                ($args['taxonomy'] && ! Registration::is_built_in( $args['taxonomy'], 'taxes' )) ) {
-                self::set_main_metabox($page);
-            }
-            else {
-                $columns = 1;
-            }
-
-            // self::set_labels_metabox($page);
-        }
-        else {
-            $page_callback = array(__CLASS__, 'start_page');
-            $page->add_metabox( 'globals', __('Globals', DOMAIN), array(__CLASS__, 'metabox_globals'), 'side' );
+            if( 'add' === $args['do'] )
+                add_action( "{$page->page}_after_form_inputs", array(__CLASS__, 'added_referer'), 10 );
         }
 
         $page->set_args( array(
             'parent' => 'options-general.php',
             'title' => __('Project Settings', DOMAIN),
             'menu' => __('Project Settings', DOMAIN),
-            'callback'    => $page_callback,
+            'callback'    => ( in_array($args['do'], ['add', 'edit']) ) ?
+                array(__CLASS__, 'edit_page_settings') :
+                array(__CLASS__, 'start_page'),
             'validate'    => array(__CLASS__, 'validate'),
             'permissions' => 'manage_options',
             'tab_sections'=> null,
-            'columns'     => $columns,
+            'columns'     => 2,
         ) );
 
         $page->set_metaboxes();
     }
 
-    private static function view_table( $context = 'type', $values, $custom_values, $columns ) // || tax
+    static function get_filter_field( $id )
     {
-        $id = ( 'type' === $context ) ? 'post-types' : 'taxonomies';
-        // $single = ( 'type' === $context ) ? 'post-type' : 'taxonomy';
-        $table = new Registrations_Table( $context, array( 'plural' => $id . '_table' ) );
+        $options = apply_filters( 'project-settings-filter-options', array(
+            '' => 'Все',
+            '_builtin' => 'Штатные',
+            'registred' => 'Зарегистрированные',
+            'project-settings' => 'Созданные',
+        ), $id );
+
+        $default = apply_filters('project-settings-filter-default', 'project-settings');
+
+        $field = array(
+            'id' => $id . '_table__filter',
+            'type' => 'select',
+            'label' => 'Показывать',
+            'options' =>  $options,
+            'input_class' => 'button',
+            'label_class' => 'alignright',
+        );
+
+        return WP_Admin_Forms::render_input( $field, $default );
+    }
+
+    private static function view_table( $context = 'types', Array $values, $custom_values, $columns ) // || tax
+    {
+        // $id = ( 'types' === $context ) ? 'post-types' : 'taxonomies';
+        // $single = ( 'types' === $context ) ? 'post-type' : 'taxonomy';
+        $table = new Registrations_Table( $context, array( 'plural' => $context . '_table' ) );
         $filter = '';
 
-        if( $values ) {
-            echo '<br class="clear">';
-            $table->set_columns( $columns );
-            foreach ($values as $value) {
-                $classrow = $value->_builtin ? '_builtin' : 'registred';
-                if( isset($custom_values[ $value->name ]) ) {
-                    $classrow = 'project-settings';
-                }
-
-                $arrValue = array(
-                    'title'    => $value->name,
-                    'label'    => $value->label,
-                    'singular' => $value->labels->singular_name,
-                    'classrow' => apply_filters( 'project-settings-table-type-classrow', $classrow, $context ),
-                    );
-
-                if( 'tax' === $context ) {
-                    $objects = array();
-                    foreach ($value->object_type as $type) {
-                        if(!isset($values[ $type ])) continue;
-
-                        $objects[] = $values[ $type ]->label;
-                    }
-
-                    $arrValue['objects'] = implode(', ', $objects);
-                }
-
-                $table->set_value( $arrValue );
+        $table->set_columns( $columns );
+        foreach ($values as $value) {
+            $classrow = $value->_builtin ? '_builtin' : 'registred';
+            if( isset($custom_values[ $value->name ]) ) {
+                $classrow = 'project-settings';
             }
 
-            $field = array(
-                'id' => $id . '_table__filter',
-                'type' => 'select',
-                'label' => 'Показывать',
-                'options' => array(
-                    '' => 'Все',
-                    '_builtin' => 'Штатные',
-                    'registred' => 'Зарегистрированные',
-                    'project-settings' => 'Созданные',
-                    ),
-                'input_class' => 'button',
-                'label_class' => 'alignright'
+            $arrValue = array(
+                'title'    => $value->name,
+                'label'    => $value->label,
+                'singular' => $value->labels->singular_name,
+                'classrow' => apply_filters( 'project-settings-table-type-classrow', $classrow, $context ),
                 );
-            $filter = WP_Admin_Forms::render_input( $field, $custom_values ?  'project-settings' : 'registred' );
-            ?>
-            <div class="pre-table-wrapper">
-                <h3 class="alignleft"><?php echo ( 'type' === $context ) ?
-                    __('Post types:', DOMAIN) : __('Taxonomies:', DOMAIN); ?></h3>
-                <?php
-                    printf('<a href="?page=%s&do=%s" class="alignright button button-primary">%s</a> %s',
-                        esc_attr( $_REQUEST['page'] ),
-                        ( 'type' === $context ) ? 'add' : 'add_taxonomy',
-                        ( 'type' === $context ) ? __( 'Create new post type', DOMAIN ) : __( 'Create new taxonomy', DOMAIN ),
-                        $filter
-                    );
-                ?>
-            </div>
-            <?php
-            if( $values ) {
-                $table->prepare_items();
-                $table->display();
+
+            if( 'tax' === $context ) {
+                $objects = array();
+                foreach ($value->object_type as $type) {
+                    if(!isset($values[ $type ])) continue;
+
+                    $objects[] = $values[ $type ]->label;
+                }
+
+                $arrValue['objects'] = implode(', ', $objects);
             }
+
+            $table->set_value( $arrValue );
         }
+
+        $table->prepare_items();
+        $table->display();
     }
 
-    public static function view_post_types_table($values, $custom_values, $columns ) {
+    public static function view_post_types_table($values, $custom_values, $columns )
+    {
+        echo '<div class="pre-table-wrapper">';
+        printf('<h3 class="alignleft">%s</h3>', __('Post types:', DOMAIN));
+        printf('<a href="?page=%s&do=add&context=types" class="alignright button button-primary">%s</a>',
+            esc_attr( Utils::OPTION ),
+            __( 'Create new post type', DOMAIN )
+        );
+        echo self::get_filter_field( 'types' );
+        echo '</div><!-- .pre-table-wrapper -->';
 
-        self::view_table('type', $values, $custom_values, $columns);
+        self::view_table('types', $values, $custom_values, $columns);
     }
 
-    public static function view_taxonomies_table($values, $custom_values, $columns ) {
+    public static function view_taxonomies_table($values, $custom_values, $columns )
+    {
+        echo '<div class="pre-table-wrapper">';
+        printf('<h3 class="alignleft">%s</h3>', __('Taxonomies:', DOMAIN));
+        printf('<a href="?page=%s&do=add&context=taxes" class="alignright button button-primary">%s</a>',
+            esc_attr( Utils::OPTION ),
+             __( 'Create new taxonomy', DOMAIN )
+        );
+        echo self::get_filter_field( 'taxes' );
+        echo '</div><!-- .pre-table-wrapper -->';
 
-        self::view_table('tax', $values, $custom_values, $columns);
+        self::view_table('taxes', $values, $custom_values, $columns);
     }
 
     static function start_page()
@@ -322,29 +323,16 @@ class Admin_Page
      * Validate Input's Values
      */
     static function validate( $values ) {
-        /**
-         * Проверять существование ID
-         */
-        $pagename = 'project-settings-start-page';
-        // Update Post Types
-        if( is_array($_REQUEST['page']) ?
-            in_array( $pagename, $_REQUEST['page']) : $pagename == $_REQUEST['page'] ) {
-            Registration::set_custom_post_types( $values );
-            Registration::set_custom_taxonomies( $values );
-            Registration::register_customs();
-            flush_rewrite_rules();
 
-            return Utils::get( 'all', array() );
-        }
+        // Update Customs
+        Registration::set_custom_post_types( $values );
+        Registration::set_custom_taxonomies( $values );
+        Registration::register_customs();
+        flush_rewrite_rules();
 
-        // $pagename = 'project-settings-start-page';
-        // @else: Update Global Options
-        // if( is_array($_REQUEST['page']) ?
-        //     in_array( $pagename, $_REQUEST['page']) : $pagename == $_REQUEST['page'] ) {
-
-            unset($values['post_type']);
-            unset($values['taxonomy']);
-        // }
+        // Update Global Settings
+        unset($values['post_type']);
+        unset($values['taxonomy']);
 
         return $values;
     }
